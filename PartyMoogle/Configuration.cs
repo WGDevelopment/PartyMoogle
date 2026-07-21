@@ -25,10 +25,25 @@ public class Configuration : IPluginConfiguration
     // --- Presence: single global gate (away = AFK OR window unfocused) ---
     public bool AwayOnly { get; set; } = true;
 
+    // --- Reply (inbound): phone -> ntfy -> in-game /tell. OPT-IN, OFF by default. ---
+    // This path injects chat via the game's chat box (automated input); see the Reply
+    // tab warning. All fields default to the safe/disarmed state.
+    public bool ReplyEnabled { get; set; } = false;
+
+    // Dedicated INBOUND topic — MUST be distinct from NtfyTopic and authenticated.
+    public string ReplyTopic { get; set; } = "";
+    public string ReplyToken { get; set; } = "";
+
+    // A reply only resolves to a tell-sender seen within this many minutes; older = rejected.
+    public int ReplyAllowlistWindowMinutes { get; set; } = 15;
+
+    // Max injected /tells per minute (human-plausible throttle; floods are dropped, not queued).
+    public int ReplyRateLimitPerMinute { get; set; } = 6;
+
     // --- Per-event rules ---
     public Dictionary<EventKind, EventRule> EventRules { get; set; } = new();
 
-    public int Version { get; set; } = 2;
+    public int Version { get; set; } = 3;
 
     // --- Legacy PushyFinder fields, kept only for one-time migration ---
     [Obsolete("Migrated to EventRules[DutyPop]. Do not read.")]
@@ -81,7 +96,10 @@ public class Configuration : IPluginConfiguration
             EventRules[kind] = rule;
         }
 
-        Version = 2;
+        // v2 -> v3: reply fields added. Their initializers already supply safe/disarmed
+        // defaults to deserialized v2 configs, so there is nothing to backfill — just
+        // normalize the stamp. Idempotent: EnsureDefaults runs on every load.
+        Version = 3;
     }
 
     public void Save()

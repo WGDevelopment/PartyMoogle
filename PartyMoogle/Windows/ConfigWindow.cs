@@ -5,6 +5,7 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
 using PartyMoogle.Delivery;
+using PartyMoogle.Impl;
 using PartyMoogle.Notification;
 using PartyMoogle.Util;
 
@@ -80,6 +81,48 @@ public class ConfigWindow : Window, IDisposable
                 Configuration.DiscordEmbedColor = cfg;
             }
         }
+    }
+
+    private void DrawReplyConfig()
+    {
+        ImGui.TextColored(new Vector4(1f, 0.3f, 0.3f, 1f),
+                          "WARNING: replies are injected as automated chat input.");
+        ImGui.TextWrapped(
+            "This sends /tell for you via the game's chat box. Automated input violates the "
+            + "FFXIV User Agreement and is the category Square Enix enforces against. Opt-in, "
+            + "at your own risk. Reply-only, rate-limited, and restricted to players who "
+            + "recently sent you a tell.");
+
+        ImGui.Separator();
+
+        {
+            var cfg = Configuration.ReplyEnabled;
+            if (ImGui.Checkbox("Enable tell-reply (automated input)", ref cfg))
+                Configuration.ReplyEnabled = cfg;
+        }
+
+        var replyTopic = Configuration.ReplyTopic ?? "";
+        if (ImGui.InputText("Reply topic (must differ from outbound)", ref replyTopic, 2048))
+            Configuration.ReplyTopic = replyTopic;
+
+        var replyToken = Configuration.ReplyToken ?? "";
+        if (ImGui.InputText("Reply token", ref replyToken, 2048, ImGuiInputTextFlags.Password))
+            Configuration.ReplyToken = replyToken;
+        ImGui.TextDisabled("Stored in plaintext in the plugin config file.");
+
+        {
+            var win = Configuration.ReplyAllowlistWindowMinutes;
+            if (ImGui.InputInt("Allowlist window (minutes)", ref win))
+                Configuration.ReplyAllowlistWindowMinutes = Math.Max(1, win);
+        }
+        {
+            var rl = Configuration.ReplyRateLimitPerMinute;
+            if (ImGui.InputInt("Max sends / minute", ref rl))
+                Configuration.ReplyRateLimitPerMinute = Math.Max(1, rl);
+        }
+
+        ImGui.Separator();
+        ImGui.TextDisabled("Reply from your phone with:  <index> your message");
     }
 
     // ---------- Per-event rules ----------
@@ -170,6 +213,10 @@ public class ConfigWindow : Window, IDisposable
                 {
                     if (discordTab) DrawDiscordConfig();
                 }
+                using (var replyTab = ImRaii.TabItem("Reply"))
+                {
+                    if (replyTab) DrawReplyConfig();
+                }
             }
         }
 
@@ -210,6 +257,8 @@ public class ConfigWindow : Window, IDisposable
         if (ImGui.Button("Save and close"))
         {
             Configuration.Save();
+            // Re-arm the inbound listener so topic/token/enable changes take effect (On() self-resets).
+            ReplyListener.On();
             IsOpen = false;
         }
     }

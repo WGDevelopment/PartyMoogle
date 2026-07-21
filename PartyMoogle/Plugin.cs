@@ -1,8 +1,10 @@
+using System;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using PartyMoogle.Impl;
+using PartyMoogle.Reply;
 using PartyMoogle.Util;
 using PartyMoogle.Windows;
 
@@ -54,6 +56,7 @@ public sealed class Plugin : IDalamudPlugin
         DutyListener.On();
         ChatListener.On();
         ClientStateListener.On();
+        ReplyListener.On();
     }
 
     public void Dispose()
@@ -67,6 +70,7 @@ public sealed class Plugin : IDalamudPlugin
         DutyListener.Off();
         ChatListener.Off();
         ClientStateListener.Off();
+        ReplyListener.Off();
 
         CommandManager.RemoveHandler(CommandName);
     }
@@ -76,6 +80,17 @@ public sealed class Plugin : IDalamudPlugin
         if (args == "debugOnlineStatus")
         {
             Service.ChatGui.Print($"OnlineStatus ID = {Service.ObjectTable.LocalPlayer!.OnlineStatus.RowId}");
+            return;
+        }
+
+        // Hidden dev aid: exercise the reply pipeline without ntfy. Routes through the
+        // IDENTICAL ReplySender path (same validation + rate limit), so it is not a second
+        // unguarded injection surface. Usage: /partymoogle testreply <index> <text>
+        const string testReply = "testreply ";
+        if (args.StartsWith(testReply, StringComparison.Ordinal))
+        {
+            var payload = args.Substring(testReply.Length);
+            _ = ReplySender.HandleInbound("debug", payload);
             return;
         }
 
