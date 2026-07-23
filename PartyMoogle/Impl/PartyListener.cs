@@ -86,6 +86,14 @@ public static class PartyListener
         var previous = lastKnownCount;
         lastKnownCount = current;
 
+        // Edge-triggered fill: fires once on an actual <8 -> 8 transition.
+        var willFireFull = previous >= 0 && previous < 8 && current == 8;
+
+        // When a fill fires PartyFull, the join that completed it is redundant — drop
+        // the join notifications for this flush so 8/8 doesn't double-notify. Only do
+        // this if PartyFull is actually enabled, otherwise the fill would go unreported.
+        var suppressJoins = willFireFull && Notifier.GetRule(EventKind.PartyFull).Enabled;
+
         if (total >= BulkThreshold)
         {
             // Resync, not real activity — collapse it. The fill transition below still
@@ -100,14 +108,14 @@ public static class PartyListener
                               $"{current}/8: Party leave",
                               $"{Describe(m)} has left the party.");
 
-            foreach (var m in joins)
-                Notifier.Fire(EventKind.PartyJoin,
-                              $"{current}/8: Party join",
-                              $"{Describe(m)} joins the party.");
+            if (!suppressJoins)
+                foreach (var m in joins)
+                    Notifier.Fire(EventKind.PartyJoin,
+                                  $"{current}/8: Party join",
+                                  $"{Describe(m)} joins the party.");
         }
 
-        // Edge-triggered: fires once, only on an actual <8 -> 8 transition.
-        if (previous >= 0 && previous < 8 && current == 8)
+        if (willFireFull)
             Notifier.Fire(EventKind.PartyFull, "Party full", "All spots are filled.");
     }
 
