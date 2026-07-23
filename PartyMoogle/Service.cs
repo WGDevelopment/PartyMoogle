@@ -22,6 +22,9 @@ public class Service
     public static ICondition Condition { get; private set; } = null!;
 
     [PluginService]
+    public static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
+
+    [PluginService]
     public static IPlayerState PlayerState { get; private set; } = null!;
 
     [PluginService]

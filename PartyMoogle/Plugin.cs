@@ -58,6 +58,7 @@ public sealed class Plugin : IDalamudPlugin
         ClientStateListener.On();
         ConditionListener.On();
         VitalsListener.On();
+        AddonListener.On();
         ReplyListener.On();
     }
 
@@ -74,6 +75,7 @@ public sealed class Plugin : IDalamudPlugin
         ClientStateListener.Off();
         ConditionListener.Off();
         VitalsListener.Off();
+        AddonListener.Off();
         ReplyListener.Off();
 
         CommandManager.RemoveHandler(CommandName);
@@ -84,6 +86,15 @@ public sealed class Plugin : IDalamudPlugin
         if (args == "debugOnlineStatus")
         {
             Service.ChatGui.Print($"OnlineStatus ID = {Service.ObjectTable.LocalPlayer!.OnlineStatus.RowId}");
+            return;
+        }
+
+        // Phase 3 discovery: toggle logging of every addon name as it opens, so the
+        // real names (ready check, trade, party invite) can be captured from the log.
+        if (args == "addonspy")
+        {
+            AddonListener.Discovery = !AddonListener.Discovery;
+            Service.ChatGui.Print($"[PartyMoogle] Addon spy {(AddonListener.Discovery ? "ON" : "OFF")}.");
             return;
         }
 
