@@ -25,6 +25,9 @@ public class Configuration : IPluginConfiguration
     // --- Presence: single global gate (away = AFK OR window unfocused) ---
     public bool AwayOnly { get; set; } = true;
 
+    // Collapse identical notifications repeated within this many seconds. 0 disables.
+    public int ThrottleSeconds { get; set; } = 5;
+
     // --- Reply (inbound): phone -> ntfy -> in-game /tell. OPT-IN, OFF by default. ---
     // This path injects chat via the game's chat box (automated input); see the Reply
     // tab warning. All fields default to the safe/disarmed state.

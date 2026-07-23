@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using PartyMoogle.Delivery;
 using PartyMoogle.Util;
 
@@ -39,6 +42,40 @@ public static class Notifier
         if (rule.Channels == NotificationChannel.None)
             return;
 
+        if (IsThrottled(kind, title, body))
+            return;
+
         MasterDelivery.Deliver(title, body, rule.Channels);
+    }
+
+    // --- Dedup / throttle -------------------------------------------------
+    // Collapses identical notifications repeated inside a short window, so a burst
+    // of the same event doesn't turn into a stack of identical pushes.
+
+    private static readonly Dictionary<string, long> lastSent = new();
+
+    private static bool IsThrottled(EventKind kind, string title, string body)
+    {
+        var window = Plugin.Configuration.ThrottleSeconds * 1000L;
+        if (window <= 0)
+            return false;
+
+        var key = $"{kind}|{title}|{body}";
+        var now = Environment.TickCount64;
+
+        if (lastSent.TryGetValue(key, out var previous) && now - previous < window)
+        {
+            Service.PluginLog.Debug($"Throttled duplicate notification: {kind}");
+            return true;
+        }
+
+        lastSent[key] = now;
+
+        // Keep the map from growing without bound during a long session.
+        if (lastSent.Count > 256)
+            foreach (var stale in lastSent.Where(kv => now - kv.Value > window * 4).Select(kv => kv.Key).ToList())
+                lastSent.Remove(stale);
+
+        return false;
     }
 }

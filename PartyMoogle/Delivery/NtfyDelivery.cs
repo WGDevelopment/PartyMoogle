@@ -22,19 +22,26 @@ public class NtfyDelivery : IDelivery
 
     private static async Task DeliverAsync(string title, string text)
     {
-        // Assuming `title` is used as the main message
-        // Since ntfy doesn't have a separate title field, you can prepend it to the message or just send the message
-        var args = string.IsNullOrEmpty(title) ? text : $"{title}: {text}";
-       
+        // Publish using ntfy's JSON format (POST an object to the server root) rather than
+        // POSTing a bare string to /{topic}. Posting a raw string serialized it as a JSON
+        // string *literal*, so ntfy stored the surrounding quotes and \uXXXX escapes as
+        // message text (apostrophes arrived as a literal '). This also gives us a
+        // real title field instead of cramming "title: body" into the message.
+        var payload = new Dictionary<string, object>
+        {
+            ["topic"] = Plugin.Configuration.NtfyTopic,
+            ["message"] = text
+        };
+        if (!string.IsNullOrEmpty(title))
+            payload["title"] = title;
+
         IFlurlRequest request = new FlurlRequest(Plugin.Configuration.NtfyServer);
-        if (!Plugin.Configuration.NtfyTopic.IsNullOrWhitespace())
-            request = request.AppendPathSegment(Plugin.Configuration.NtfyTopic);
         if (!Plugin.Configuration.NtfyToken.IsNullOrWhitespace())
             request = request.WithOAuthBearerToken(Plugin.Configuration.NtfyToken);
 
         try
         {
-            await request.PostJsonAsync(args);
+            await request.PostJsonAsync(payload);
             Service.PluginLog.Debug("Sent Ntfy message");
         }
         catch (FlurlHttpException e)

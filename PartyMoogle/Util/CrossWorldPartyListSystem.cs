@@ -18,6 +18,13 @@ public static class CrossWorldPartyListSystem
     public static event CrossWorldJoinDelegate? OnJoin;
     public static event CrossWorldLeaveDelegate? OnLeave;
 
+    /// <summary>
+    /// Authoritative current member count. Per-event <see cref="CrossWorldMember.PartyCount"/>
+    /// is unreliable during a bulk resync (joiners carry the new count, leavers the old),
+    /// so consumers should read this instead.
+    /// </summary>
+    public static int CurrentCount { get; private set; }
+
     public static void Start()
     {
         Service.Framework.Update += Update;
@@ -55,25 +62,18 @@ public static class CrossWorldPartyListSystem
             members.Add(mObj);
         }
 
-        if (members.Count != oldMembers.Count)
-        {
-            // Check for joins
-            foreach (var i in members)
-                if (!ListContainsMember(oldMembers, i))
-                {
-                    // member joined
-                    OnJoin?.Invoke(i);
-                }
+        CurrentCount = members.Count;
 
-            // Check for leaves
-            foreach (var i in oldMembers)
-                if (!ListContainsMember(members, i))
-                {
-                    // member left
-                    OnLeave?.Invoke(i);
-                }
-        }
-        
+        // Always diff by identity, not just when the count changes: a simultaneous
+        // join+leave keeps the count equal but is still a real membership change.
+        foreach (var i in members)
+            if (!ListContainsMember(oldMembers, i))
+                OnJoin?.Invoke(i);
+
+        foreach (var i in oldMembers)
+            if (!ListContainsMember(members, i))
+                OnLeave?.Invoke(i);
+
         // Fix potential broken references caused by memory semantics
         oldMembers = members.ToList();
     }
