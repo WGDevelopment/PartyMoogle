@@ -30,7 +30,13 @@ public enum EventKind
     JobChange,
     ZoneChange,
     EnterPvP,
-    LeavePvP
+    LeavePvP,
+
+    // Vitals / combat (Phase 2: condition events + HP polling)
+    CombatEnd,
+    CutsceneEnd,
+    LowHp,
+    Death
 }
 
 /// <summary>Which extra filter widgets the config UI draws for an event.</summary>
@@ -46,7 +52,8 @@ public enum EventCategory
     Duty,
     Party,
     Chat,
-    Character
+    Character,
+    Vitals
 }
 
 public readonly record struct EventMeta(string Display, EventCategory Category, FilterType Filter);
@@ -73,6 +80,11 @@ public static class EventCatalog
         [EventKind.JobChange]  = new("Job / class change", EventCategory.Character, FilterType.None),
         [EventKind.ZoneChange] = new("Zone change",     EventCategory.Character, FilterType.None),
         [EventKind.EnterPvP]   = new("Enter PvP",       EventCategory.Character, FilterType.None),
-        [EventKind.LeavePvP]   = new("Leave PvP",       EventCategory.Character, FilterType.None)
+        [EventKind.LeavePvP]   = new("Leave PvP",       EventCategory.Character, FilterType.None),
+
+        [EventKind.CombatEnd]   = new("Combat ended",   EventCategory.Vitals, FilterType.None),
+        [EventKind.CutsceneEnd] = new("Cutscene ended", EventCategory.Vitals, FilterType.None),
+        [EventKind.LowHp]       = new("Low HP",         EventCategory.Vitals, FilterType.Threshold),
+        [EventKind.Death]       = new("Death (KO)",     EventCategory.Vitals, FilterType.None)
     };
 }

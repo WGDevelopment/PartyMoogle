@@ -165,8 +165,17 @@ public class ConfigWindow : Window, IDisposable
 
                 if (meta.Filter == FilterType.Chat)
                     DrawChatFilter(rule);
+                else if (meta.Filter == FilterType.Threshold)
+                    DrawThresholdFilter(rule);
             }
         }
+    }
+
+    private void DrawThresholdFilter(EventRule rule)
+    {
+        var threshold = rule.Threshold;
+        if (ImGui.InputInt("Fire at or below (%)", ref threshold))
+            rule.Threshold = Math.Clamp(threshold, 1, 100);
     }
 
     private static void SetChannel(EventRule rule, NotificationChannel channel, bool on)

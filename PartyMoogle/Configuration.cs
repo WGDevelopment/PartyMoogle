@@ -94,6 +94,10 @@ public class Configuration : IPluginConfiguration
                     // Default chat filter to incoming tells so it isn't a firehose.
                     rule.ChatTypes.Add((int)Dalamud.Game.Text.XivChatType.TellIncoming);
                     break;
+                case EventKind.LowHp:
+                    // Seed a usable threshold so the poller has a line to trip at.
+                    rule.Threshold = 25;
+                    break;
             }
 
             EventRules[kind] = rule;

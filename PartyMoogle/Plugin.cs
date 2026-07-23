@@ -56,6 +56,8 @@ public sealed class Plugin : IDalamudPlugin
         DutyListener.On();
         ChatListener.On();
         ClientStateListener.On();
+        ConditionListener.On();
+        VitalsListener.On();
         ReplyListener.On();
     }
 
@@ -70,6 +72,8 @@ public sealed class Plugin : IDalamudPlugin
         DutyListener.Off();
         ChatListener.Off();
         ClientStateListener.Off();
+        ConditionListener.Off();
+        VitalsListener.Off();
         ReplyListener.Off();
 
         CommandManager.RemoveHandler(CommandName);
