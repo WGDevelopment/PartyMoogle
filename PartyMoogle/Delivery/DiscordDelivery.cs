@@ -22,6 +22,10 @@ internal class DiscordDelivery : IDelivery
 
     private static async Task DeliverAsync(string title, string text)
     {
+        const string iconUrl =
+            "https://raw.githubusercontent.com/WGDevelopment/PartyMoogle/main/PartyMoogle/images/icon.png";
+        const string repoUrl = "https://github.com/WGDevelopment/PartyMoogle";
+
         var webhook = new WebhookBuilder();
 
         if (!Plugin.Configuration.DiscordUseEmbed)
@@ -34,10 +38,10 @@ internal class DiscordDelivery : IDelivery
                               .WithDescription(text)
                               .WithTitle(title)
                               .WithColor(Plugin.Configuration.DiscordEmbedColor)
-                              .WithAuthor("PartyMoogle"));
+                              .WithAuthor("PartyMoogle", repoUrl, iconUrl));
         }
 
-        // TODO(pre-publish): set avatar/author icon once the plugin icon asset exists.
+        webhook.WithAvatarUrl(iconUrl);
         webhook.WithUsername("PartyMoogle");
 
         try

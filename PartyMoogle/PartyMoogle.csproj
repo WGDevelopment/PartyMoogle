@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <Authors>PartyMoogle contributors</Authors>
-    <Company></Company>
+    <Authors>WGDevelopment</Authors>
+    <Company>WGDevelopment</Company>
     <Version>0.1.0.0</Version>
     <Description>Per-event push notifications for FFXIV to ntfy and Discord. Fork of PushyFinder (MIT, (C) 2023 Luna@Nightshade).</Description>
-    <Copyright>(C) 2023 Luna@Nightshade; (C) 2026 PartyMoogle contributors</Copyright>
-    <PackageProjectUrl>https://github.com/lostkagamine/PushyFinder</PackageProjectUrl>
+    <Copyright>(C) 2023 Luna@Nightshade; (C) 2026 WGDevelopment</Copyright>
+    <PackageProjectUrl>https://github.com/WGDevelopment/PartyMoogle</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -1,10 +1,12 @@
 {
-  "Author": "TODO-author",
+  "Author": "WGDevelopment",
   "Name": "PartyMoogle",
   "Punchline": "Per-event push notifications to ntfy and Discord.",
   "Description": "Sends push notifications to ntfy and/or Discord for a wide range of FFXIV events — duty pops, party join/leave, chat (filterable by channel and keyword), duty lifecycle, level up, zone change and more. Every event is individually enable-able with its own channel routing, gated by a single 'only while away' toggle. Fork of PushyFinder (MIT).",
   "InternalName": "PartyMoogle",
   "ApplicableVersion": "any",
+  "RepoUrl": "https://github.com/WGDevelopment/PartyMoogle",
+  "IconUrl": "https://raw.githubusercontent.com/WGDevelopment/PartyMoogle/main/PartyMoogle/images/icon.png",
   "Tags": [
     "notifications",
     "ntfy",
