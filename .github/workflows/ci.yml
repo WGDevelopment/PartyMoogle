@@ -1,0 +1,70 @@
+# Continuous integration for the PartyMoogle Dalamud plugin.
+#
+# Dalamud plugins target net10.0-windows and link against the Dalamud dev
+# distribution, which is NOT present on GitHub runners. We fetch it at build
+# time and drop it into the standard XIVLauncher dev-hooks path, where the
+# Dalamud.NET.Sdk auto-locates it on Windows (same approach as the sibling
+# WGDevelopment plugin, akadaemia-anyder).
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    name: Build (Release)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Setup Dalamud for CI
+        shell: pwsh
+        run: |
+          # Dalamud.NET.Sdk resolves DalamudLibPath from this path on Windows.
+          $dalamudPath = "$env:APPDATA\XIVLauncher\addon\Hooks\dev"
+          New-Item -ItemType Directory -Path $dalamudPath -Force | Out-Null
+
+          Write-Host "Downloading the latest Dalamud dev distribution..."
+          $dalamudUrl = "https://goatcorp.github.io/dalamud-distrib/latest.zip"
+          $zipPath = "$env:TEMP\dalamud-latest.zip"
+
+          Invoke-WebRequest -Uri $dalamudUrl -OutFile $zipPath -ErrorAction Stop
+          Expand-Archive -Path $zipPath -DestinationPath $dalamudPath -Force
+          Write-Host "Dalamud extracted to $dalamudPath"
+
+      - name: Restore dependencies
+        run: dotnet restore PartyMoogle/PartyMoogle.csproj
+
+      - name: Build
+        run: dotnet build PartyMoogle/PartyMoogle.csproj -c Release --no-restore
+
+      - name: Locate packaged plugin
+        id: package
+        shell: pwsh
+        run: |
+          # Dalamud.NET.Sdk packages the distributable plugin as latest.zip.
+          $zip = Get-ChildItem -Path "PartyMoogle/bin/Release" -Filter "latest.zip" -Recurse |
+                 Select-Object -First 1
+          if ($null -eq $zip) {
+            Write-Host "ERROR: latest.zip not found under PartyMoogle/bin/Release" -ForegroundColor Red
+            exit 1
+          }
+          Write-Host "Packaged plugin: $($zip.FullName) ($([math]::Round($zip.Length/1KB,1)) KB)"
+          "path=$($zip.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PartyMoogle-plugin
+          path: ${{ steps.package.outputs.path }}
+          retention-days: 30

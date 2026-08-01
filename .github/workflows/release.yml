@@ -1,0 +1,90 @@
+# Release build for the PartyMoogle Dalamud plugin.
+#
+# Triggered when a version tag (vMAJOR.MINOR.PATCH) is pushed. Builds the
+# plugin in Release, then publishes a GitHub Release with the packaged
+# latest.zip attached. Mirrors the release flow of the sibling WGDevelopment
+# plugin, akadaemia-anyder.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write   # required for GITHUB_TOKEN to create the release
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+    name: Build Release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Extract version from tag
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          Write-Host "Release version: $version"
+          Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_VERSION=$version"
+
+      - name: Setup Dalamud for CI
+        shell: pwsh
+        run: |
+          # Dalamud.NET.Sdk resolves DalamudLibPath from this path on Windows.
+          $dalamudPath = "$env:APPDATA\XIVLauncher\addon\Hooks\dev"
+          New-Item -ItemType Directory -Path $dalamudPath -Force | Out-Null
+
+          Write-Host "Downloading the latest Dalamud dev distribution..."
+          $dalamudUrl = "https://goatcorp.github.io/dalamud-distrib/latest.zip"
+          $zipPath = "$env:TEMP\dalamud-latest.zip"
+
+          Invoke-WebRequest -Uri $dalamudUrl -OutFile $zipPath -ErrorAction Stop
+          Expand-Archive -Path $zipPath -DestinationPath $dalamudPath -Force
+          Write-Host "Dalamud extracted to $dalamudPath"
+
+      - name: Restore dependencies
+        run: dotnet restore PartyMoogle/PartyMoogle.csproj
+
+      - name: Build Release
+        run: dotnet build PartyMoogle/PartyMoogle.csproj -c Release --no-restore
+
+      - name: Locate packaged plugin
+        id: package
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem -Path "PartyMoogle/bin/Release" -Filter "latest.zip" -Recurse |
+                 Select-Object -First 1
+          if ($null -eq $zip) {
+            Write-Host "ERROR: latest.zip not found under PartyMoogle/bin/Release" -ForegroundColor Red
+            exit 1
+          }
+          # Name the release asset with the version for a friendly download name.
+          $asset = "PartyMoogle-${{ env.RELEASE_VERSION }}.zip"
+          Copy-Item $zip.FullName -Destination $asset
+          Write-Host "Release asset: $asset ($([math]::Round($zip.Length/1KB,1)) KB)"
+          "asset=$asset" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PartyMoogle-plugin
+          path: ${{ steps.package.outputs.asset }}
+          retention-days: 90
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: PartyMoogle ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: ${{ steps.package.outputs.asset }}
