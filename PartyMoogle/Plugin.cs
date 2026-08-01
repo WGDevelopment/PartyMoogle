@@ -50,6 +50,7 @@ public sealed class Plugin : IDalamudPlugin
 
         PluginInterface.UiBuilder.Draw += DrawUI;
         PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+        PluginInterface.UiBuilder.OpenMainUi += DrawMainUI;
 
         CrossWorldPartyListSystem.Start();
         PartyListener.On();
@@ -118,6 +119,13 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     public void DrawConfigUI()
+    {
+        ConfigWindow.IsOpen = true;
+    }
+
+    // The config window is PartyMoogle's main entrypoint, so the main-UI button
+    // opens the same window. Registering this clears the Dalamud validation notice.
+    public void DrawMainUI()
     {
         ConfigWindow.IsOpen = true;
     }
