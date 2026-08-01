@@ -42,7 +42,7 @@ public class NtfyDelivery : IDelivery
         try
         {
             await request.PostJsonAsync(payload);
-            Service.PluginLog.Debug("Sent Ntfy message");
+            Service.PluginLog.Information($"Sent ntfy notification: {title}");
         }
         catch (FlurlHttpException e)
         {

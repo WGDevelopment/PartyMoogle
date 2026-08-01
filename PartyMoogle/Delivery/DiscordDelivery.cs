@@ -44,7 +44,7 @@ internal class DiscordDelivery : IDelivery
         {
             // this can break if they register a webhook to a channel type of forum or media
             await Plugin.Configuration.DiscordWebhookToken.PostJsonAsync(webhook.Build());
-            Service.PluginLog.Debug("Sent Discord message");
+            Service.PluginLog.Information($"Sent Discord notification: {title}");
         }
         catch (FlurlHttpException e)
         {

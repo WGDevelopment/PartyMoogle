@@ -81,12 +81,12 @@ public class Configuration : IPluginConfiguration
 
             var rule = new EventRule();
 
-            // Sensible first-run defaults: the classic PushyFinder set on, rest off.
+            // Sensible first-run defaults: the low-noise essentials on, rest off.
+            // Party join/leave are intentionally OFF — in a Party Finder they churn
+            // heavily pre-duty; PartyFull + DutyPop cover the moments that matter.
             switch (kind)
             {
                 case EventKind.DutyPop:
-                case EventKind.PartyJoin:
-                case EventKind.PartyLeave:
                 case EventKind.PartyFull:
                     rule.Enabled = true;
                     break;
