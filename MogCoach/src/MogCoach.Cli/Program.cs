@@ -15,6 +15,10 @@ if (parsed.Command is null or "help" or "--help")
     return 0;
 }
 
+// import-aoe needs no services/config — handle before building the host.
+if (parsed.Command == "import-aoe")
+    return AoeImport.Run(parsed);
+
 // Content root = the exe directory so appsettings.json (copied to output) always loads, regardless
 // of the working directory the command was launched from. Args are intentionally not passed to the
 // builder so our CLI flags aren't consumed by the command-line configuration provider.
@@ -126,9 +130,11 @@ static void PrintUsage()
         MogCoach — FFXIV post-session coaching (record → transcribe → analyze → recommend)
 
         Usage:
-          mogcoach doctor  [--seconds 8]           check your setup (run after each install step)
-          mogcoach record  [--out captures/session.log]
-          mogcoach analyze --capture <path> [options]
+          mogcoach doctor     [--seconds 8]        check your setup (run after each install step)
+          mogcoach import-aoe --bossmod <path> [--out reference-data/aoe/shapes.json]
+                                                   draft the AoE shape DB from a BossMod source tree
+          mogcoach record     [--out captures/session.log]
+          mogcoach analyze    --capture <path> [options]
 
         analyze options:
           --capture <path>     IINACT network-log capture (required)

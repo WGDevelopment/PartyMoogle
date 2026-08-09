@@ -89,6 +89,28 @@ means hooking the game's action path (`ActionManager.UseAction` or the ActionEff
 which is exactly why we default to IINACT. A hook is scaffolded but off by default; enable it only if
 you accept maintaining the signature.
 
+## Seeding the AoE shape DB
+
+`shapes.json` (ability-id → geometry) is what turns "were you in the AoE" into a computation, and it's
+the main authoring cost. Two ways to fill it:
+
+- **`mogcoach import-aoe --bossmod <path>`** — best-effort scrape of a local [BossMod](https://github.com/awgil/ffxiv_bossmod)
+  source tree. BossMod defines shapes in component code (not a table), so only shapes with a nearby
+  `AID.Name` are auto-bound; the rest land in `shapes.unbound.json` with file/line/context for manual
+  curation. Treat the output as a **reviewable draft** — hand-edits are preserved on re-import.
+- **By hand**, per fight you're progging — a handful of entries covers the mechanics that actually kill
+  you. See `reference-data/aoe/shapes.json` for the schema.
+
+Shape mapping from BossMod: Circle→Circle, Donut→Donut, Cone→Cone (half-angle°), Rect(front,halfW,back)
+→Line (length=front; back dropped), Cross→Cross.
+
+## Job gauge coverage
+
+The sampler records job gauge per snapshot (overcap/resource analysis). Gauges are implemented for most
+jobs; the reworked/newest ones (AST, SMN, VPR, PCT) are TODO and recorded as null until their gauge
+members are confirmed against the SDK. Gauge member names are the most SDK-version-sensitive part of the
+plugin — a wrong name is a compile error; fix it in `Sampler.BuildGauge`.
+
 ## ToS / altitude
 
 Read-only, post-session, no overlay, no automation, never sends input to the game. This is the same

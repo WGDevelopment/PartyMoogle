@@ -115,6 +115,9 @@ VLM on the death/wipe keyframes.
 
 ## 5. Optional — better recommendations
 
+- **AoE shape DB** (unlocks "stood in the AoE" findings): draft it from a local BossMod checkout with
+  `mogcoach import-aoe --bossmod <path-to-ffxiv_bossmod>`, then review `reference-data/aoe/shapes.json`
+  and the generated `shapes.unbound.json`. Or hand-author entries for the fight you're progging.
 - **Rotation references**: drop curated JSON per job in `reference-data/rotations/` (see
   `warrior.json` for the schema; replace the placeholder with a real reference for your patch).
 - **FFLogs benchmarks**: create an API client at <https://www.fflogs.com/api/clients/>, set

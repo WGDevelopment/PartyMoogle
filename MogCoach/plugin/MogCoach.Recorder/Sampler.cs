@@ -206,25 +206,55 @@ public sealed class Sampler : IDisposable
         return list;
     }
 
-    /// <summary>Best-effort job gauge. Extend the switch per job as needed (WAR shown as the pattern).</summary>
+    /// <summary>
+    /// Job gauge resources per job. VERIFY property names against your Dalamud SDK — gauge type members
+    /// drift (especially reworked/newest jobs). Jobs left out (AST, SMN, VPR, PCT) are TODO: their
+    /// gauge shapes changed recently; add them once confirmed. A wrong member name is a COMPILE error,
+    /// so fix or comment out any that don't resolve on your SDK.
+    /// </summary>
     private static Dictionary<string, double>? BuildGauge(uint jobRowId)
     {
         try
         {
-            switch (jobRowId)
+            var g = Service.JobGauges;
+            return jobRowId switch
             {
-                case 21: // Warrior
-                    var war = Service.JobGauges.Get<WARGauge>();
-                    return new Dictionary<string, double> { ["beastGauge"] = war.BeastGauge };
-                default:
-                    return null; // TODO: add remaining jobs
-            }
+                19 => D(("oath", g.Get<PLDGauge>().OathGauge)),
+                20 => D(("chakra", g.Get<MNKGauge>().Chakra)),
+                21 => D(("beastGauge", g.Get<WARGauge>().BeastGauge)),
+                22 => D(("firstmindsFocus", g.Get<DRGGauge>().FirstmindsFocusCount)),
+                23 => D(("repertoire", g.Get<BRDGauge>().Repertoire), ("soulVoice", g.Get<BRDGauge>().SoulVoice)),
+                24 => D(("lily", g.Get<WHMGauge>().Lily), ("bloodLily", g.Get<WHMGauge>().BloodLily)),
+                25 => D(("polyglot", g.Get<BLMGauge>().PolyglotStacks), ("umbralHearts", g.Get<BLMGauge>().UmbralHearts)),
+                27 => null, // SMN — gauge reworked; TODO verify
+                28 => D(("aetherflow", g.Get<SCHGauge>().Aetherflow), ("fairyGauge", g.Get<SCHGauge>().FairyGauge)),
+                30 => D(("ninki", g.Get<NINGauge>().Ninki)),
+                31 => D(("heat", g.Get<MCHGauge>().Heat), ("battery", g.Get<MCHGauge>().Battery)),
+                32 => D(("blood", g.Get<DRKGauge>().Blood), ("darksideMs", g.Get<DRKGauge>().DarksideTimeRemaining)),
+                33 => null, // AST — card system reworked; TODO verify
+                34 => D(("kenki", g.Get<SAMGauge>().Kenki), ("meditation", g.Get<SAMGauge>().MeditationStacks)),
+                35 => D(("whiteMana", g.Get<RDMGauge>().WhiteMana), ("blackMana", g.Get<RDMGauge>().BlackMana)),
+                37 => D(("ammo", g.Get<GNBGauge>().Ammo)),
+                38 => D(("feathers", g.Get<DNCGauge>().Feathers), ("esprit", g.Get<DNCGauge>().Esprit)),
+                39 => D(("soul", g.Get<RPRGauge>().Soul), ("shroud", g.Get<RPRGauge>().Shroud)),
+                40 => D(("addersgall", g.Get<SGEGauge>().Addersgall), ("addersting", g.Get<SGEGauge>().Addersting)),
+                41 => null, // VPR — new job; TODO verify
+                42 => null, // PCT — new job; TODO verify
+                _ => null,
+            };
         }
         catch (Exception ex)
         {
             Service.Log.Warning(ex, "Gauge read failed for job {Job}", jobRowId);
             return null;
         }
+    }
+
+    private static Dictionary<string, double> D(params (string Key, double Value)[] entries)
+    {
+        var d = new Dictionary<string, double>(entries.Length);
+        foreach (var (k, v) in entries) d[k] = v;
+        return d;
     }
 
     private static string? Classify(IBattleChara chara, ulong selfId)
