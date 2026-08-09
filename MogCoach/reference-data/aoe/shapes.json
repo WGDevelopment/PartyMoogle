@@ -1,0 +1,8 @@
+{
+  "//": "PLACEHOLDER — ability-id (hex) -> AoE geometry, in yalms/degrees. Seed real values from a source like BossMod's encounter modules. Keys are the cast action id as it appears in the capture (hex, no leading zeros needed).",
+
+  "2A3F": { "kind": "Circle", "radius": 6.0 },
+  "2A40": { "kind": "Donut", "innerRadius": 6.0, "radius": 30.0 },
+  "2A41": { "kind": "Cone", "radius": 40.0, "halfAngleDegrees": 45.0 },
+  "2A42": { "kind": "Line", "length": 50.0, "halfWidth": 3.0 }
+}

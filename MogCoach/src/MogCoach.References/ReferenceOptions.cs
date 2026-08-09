@@ -10,4 +10,7 @@ public sealed class ReferenceOptions
     /// "{X}.{Y}.json" then "{X}.json" (case-insensitive).
     /// </summary>
     public string RotationsDirectory { get; set; } = "reference-data/rotations";
+
+    /// <summary>JSON file mapping ability id (hex) → AoE shape, for the positional "in the danger zone" test.</summary>
+    public string AoeShapesFile { get; set; } = "reference-data/aoe/shapes.json";
 }

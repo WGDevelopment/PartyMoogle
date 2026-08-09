@@ -7,9 +7,11 @@ using MogCoach.Analysis.Report;
 using MogCoach.Core.Abstractions;
 using MogCoach.Ingest;
 using MogCoach.Ingest.Iinact;
+using MogCoach.Ingest.Sampler;
 using MogCoach.Ingest.Screenpipe;
 using MogCoach.Llm;
 using MogCoach.References;
+using MogCoach.References.Aoe;
 using MogCoach.References.FfLogs;
 using MogCoach.References.Rotations;
 
@@ -36,20 +38,23 @@ public static class ServiceConfiguration
             client.Timeout = TimeSpan.FromSeconds(o.TimeoutSeconds);
         });
 
-        // Ingest
-        services.AddSingleton<ITelemetrySourceFactory, IinactCaptureFileSourceFactory>();
+        // Ingest — capture source picks IINACT .log vs sampler .mogcap by extension.
+        services.AddSingleton<ITelemetrySourceFactory, CaptureSourceFactory>();
+        services.AddSingleton<ISnapshotProvider, SamplerSnapshotProvider>();
         services.AddSingleton<IEncounterSegmenter>(sp =>
             new EncounterSegmenter(sp.GetRequiredService<IOptions<SegmenterOptions>>().Value));
         services.AddSingleton<IFrameStore, ScreenpipeSqliteFrameStore>();
 
         // References
         services.AddSingleton<IReferenceProvider, JsonRotationProvider>();
+        services.AddSingleton<IAoeShapeProvider, JsonAoeShapeProvider>();
         services.AddHttpClient<IBenchmarkProvider, FfLogsClient>();
 
         // Analysis
         services.AddSingleton<IKeyframeSelector, KeyframeSelector>();
         services.AddTransient<TelemetryAnalyzer>();
         services.AddTransient<VisionAnalyzer>();
+        services.AddTransient<PositionalAnalyzer>();
         services.AddSingleton<FindingFuser>();
         services.AddTransient<ICoachingPipeline, CoachingPipeline>();
 

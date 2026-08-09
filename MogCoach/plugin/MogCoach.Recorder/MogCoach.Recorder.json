@@ -1,0 +1,11 @@
+{
+  "Author": "WGDevelopment",
+  "Name": "MogCoach Recorder",
+  "InternalName": "MogCoachRecorder",
+  "Punchline": "Records FFXIV combat state to a .mogcap file for post-session coaching.",
+  "Description": "Samples the object table (positions, headings, cast bars, status timers, job gauge) at a fixed rate and writes a .mogcap capture that the MogCoach analyzer turns into a coaching report. Observe-only: it never sends input to the game and never automates play. Use /mogrec to start and stop recording.",
+  "RepoUrl": "https://github.com/WGDevelopment/MogCoach",
+  "Tags": [ "combat", "logging", "coaching", "analysis" ],
+  "LoadRequiredState": 0,
+  "LoadSync": false
+}

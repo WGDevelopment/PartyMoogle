@@ -5,6 +5,14 @@ recommend" shape of a Screenpipe workflow and rebuilds it for raid/dungeon coach
 **structured combat telemetry as the spine and screen frames as visual evidence**, with all
 inference running on a **local vision-capable LLM**.
 
+> **v2 update — read [`SAMPLER.md`](SAMPLER.md) first.** The design now centers a **custom Dalamud
+> sampler plugin** (`plugin/MogCoach.Recorder`) that reads the object table every frame for
+> *continuous* positions, headings, cast telegraphs, status timers, and job gauge — the data IINACT
+> can't provide. That makes positioning, mechanics, movement tells, and buff/gauge analysis derivable
+> from data (see the signal-ceiling table in SAMPLER.md). IINACT is kept as the action/damage event
+> stream (optional cross-check). Sections below describe the original IINACT-first pipeline, which the
+> sampler capture plugs into unchanged (both are just capture sources).
+
 > Status: scaffold. Interfaces and data flow are implemented; several integration points are
 > marked **VERIFY** / **TODO** because they depend on a live system (exact Screenpipe DB
 > schema, IINACT director opcodes, the FFLogs benchmark query). See §14.
@@ -236,14 +244,17 @@ dotnet run --project src/MogCoach.Cli -- analyze --capture samples/sample-captur
 ```
 MogCoach/
   src/
-    MogCoach.Core        models + abstractions (no deps)
-    MogCoach.Ingest      IINACT parser/recorder, segmenter, Screenpipe frame store
+    MogCoach.Core        models, geometry (AoE shapes), abstractions (no deps)
+    MogCoach.Ingest      capture sources (sampler .mogcap + IINACT .log), segmenter,
+                         Screenpipe frame store, diagnostics
     MogCoach.Llm         OpenAI-compatible text+vision client
-    MogCoach.References  rotation JSON provider, FFLogs client
-    MogCoach.Analysis    pipeline (telemetry, keyframe, vision, fusion) + renderers
-    MogCoach.Cli         host, DI, config, `record` / `analyze`
+    MogCoach.References  rotation JSON, AoE-shape DB, FFLogs client
+    MogCoach.Analysis    pipeline (telemetry, positional, keyframe, vision, fusion) + renderers
+    MogCoach.Cli         host, DI, config, `doctor` / `record` / `analyze`
+  plugin/MogCoach.Recorder   Dalamud sampler plugin (the spatial/state spine) — builds vs Dalamud SDK
   tests/MogCoach.Tests   segmenter + log-parser unit tests
   reference-data/rotations   curated rotation references (placeholder included)
-  samples/               a tiny sample capture for a telemetry-only smoke run
-  docs/SPEC.md           this document
+  reference-data/aoe         ability-id → AoE geometry DB (placeholder included)
+  samples/               tiny sample captures (.mogcap and .log) for smoke runs
+  docs/  SPEC.md · SAMPLER.md (v2 architecture) · SETUP.md
 ```
