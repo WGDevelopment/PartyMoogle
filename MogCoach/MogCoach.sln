@@ -1,0 +1,58 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.0.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MogCoach.Core", "src\MogCoach.Core\MogCoach.Core.csproj", "{3086CA92-98B1-47B3-B610-A77BE274E151}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MogCoach.Ingest", "src\MogCoach.Ingest\MogCoach.Ingest.csproj", "{48C12B5F-ED2D-4C74-B529-3CD0755D0445}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MogCoach.Llm", "src\MogCoach.Llm\MogCoach.Llm.csproj", "{50039C14-2989-4DF0-AF2F-77E3B1F11D8E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MogCoach.References", "src\MogCoach.References\MogCoach.References.csproj", "{A36F61BA-E959-437E-BACA-67A31CB5B0BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MogCoach.Analysis", "src\MogCoach.Analysis\MogCoach.Analysis.csproj", "{19EBC047-7706-4E25-AF94-93EE85977576}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MogCoach.Cli", "src\MogCoach.Cli\MogCoach.Cli.csproj", "{63580F4B-1252-4EB5-A9FA-FF2338F26C12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MogCoach.Tests", "tests\MogCoach.Tests\MogCoach.Tests.csproj", "{0FEDE1CF-0C88-4BDE-9AAB-548A30610EBC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3086CA92-98B1-47B3-B610-A77BE274E151}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3086CA92-98B1-47B3-B610-A77BE274E151}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3086CA92-98B1-47B3-B610-A77BE274E151}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3086CA92-98B1-47B3-B610-A77BE274E151}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48C12B5F-ED2D-4C74-B529-3CD0755D0445}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48C12B5F-ED2D-4C74-B529-3CD0755D0445}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48C12B5F-ED2D-4C74-B529-3CD0755D0445}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48C12B5F-ED2D-4C74-B529-3CD0755D0445}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50039C14-2989-4DF0-AF2F-77E3B1F11D8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50039C14-2989-4DF0-AF2F-77E3B1F11D8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50039C14-2989-4DF0-AF2F-77E3B1F11D8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50039C14-2989-4DF0-AF2F-77E3B1F11D8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A36F61BA-E959-437E-BACA-67A31CB5B0BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A36F61BA-E959-437E-BACA-67A31CB5B0BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A36F61BA-E959-437E-BACA-67A31CB5B0BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A36F61BA-E959-437E-BACA-67A31CB5B0BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19EBC047-7706-4E25-AF94-93EE85977576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19EBC047-7706-4E25-AF94-93EE85977576}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19EBC047-7706-4E25-AF94-93EE85977576}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19EBC047-7706-4E25-AF94-93EE85977576}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63580F4B-1252-4EB5-A9FA-FF2338F26C12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63580F4B-1252-4EB5-A9FA-FF2338F26C12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63580F4B-1252-4EB5-A9FA-FF2338F26C12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63580F4B-1252-4EB5-A9FA-FF2338F26C12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FEDE1CF-0C88-4BDE-9AAB-548A30610EBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FEDE1CF-0C88-4BDE-9AAB-548A30610EBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FEDE1CF-0C88-4BDE-9AAB-548A30610EBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FEDE1CF-0C88-4BDE-9AAB-548A30610EBC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

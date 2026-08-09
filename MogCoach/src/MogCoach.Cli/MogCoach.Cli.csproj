@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>MogCoach.Cli</RootNamespace>
+    <AssemblyName>mogcoach</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MogCoach.Core\MogCoach.Core.csproj" />
+    <ProjectReference Include="..\MogCoach.Ingest\MogCoach.Ingest.csproj" />
+    <ProjectReference Include="..\MogCoach.Llm\MogCoach.Llm.csproj" />
+    <ProjectReference Include="..\MogCoach.References\MogCoach.References.csproj" />
+    <ProjectReference Include="..\MogCoach.Analysis\MogCoach.Analysis.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

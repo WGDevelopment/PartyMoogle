@@ -1,0 +1,23 @@
+{
+  "//": "PLACEHOLDER — schema demonstration only, NOT an authoritative rotation. Replace opener/priority with a curated reference from a trusted source (e.g. The Balance) for the current patch before using in coaching.",
+  "encounter": null,
+  "source": "PLACEHOLDER — replace with e.g. 'The Balance — WAR 7.x'",
+  "opener": [
+    "Tomahawk",
+    "Infuriate",
+    "Inner Release",
+    "Fell Cleave",
+    "Primal Rend"
+  ],
+  "priority": [
+    "Inner Chaos / Fell Cleave under Inner Release",
+    "Storm's Eye to keep Surging Tempest up",
+    "Spend Beast Gauge before overcap",
+    "Storm's Path in filler for gauge + healing"
+  ],
+  "notes": [
+    "Keep Surging Tempest uptime as close to 100% as possible.",
+    "Align Inner Release with party 2-minute burst windows.",
+    "Avoid Infuriate overcap; don't hold gauge into downtime."
+  ]
+}

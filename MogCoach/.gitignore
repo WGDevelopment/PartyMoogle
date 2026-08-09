@@ -1,0 +1,26 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Build / restore
+artifacts/
+[Dd]ebug/
+[Rr]elease/
+project.lock.json
+
+# Local config with secrets — copy appsettings.json to appsettings.Local.json
+appsettings.Local.json
+appsettings.*.Local.json
+.env
+
+# Captured sessions (raw telemetry + frames) and generated reports
+captures/
+reports/
+*.mogcap
+
+# OS
+.DS_Store
+Thumbs.db
