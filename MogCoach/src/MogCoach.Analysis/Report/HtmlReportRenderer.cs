@@ -35,7 +35,7 @@ public sealed class HtmlReportRenderer : IReportRenderer
         Row(sb, "GCD uptime (approx)", r.Metrics.GcdUptime is { } u ? u.ToString("P0") : "n/a");
         Row(sb, "GCD drift (approx)", r.Metrics.GcdDriftSeconds is { } d ? $"{d:F1}s" : "n/a");
         Row(sb, "Deaths", r.Metrics.DeathCount.ToString());
-        if (r.Metrics.BenchmarkDps is not null) Row(sb, "Benchmark median rDPS", r.Metrics.BenchmarkDps.Value.ToString("F0"));
+        if (r.Metrics.BenchmarkDps is not null) Row(sb, "FFLogs best rDPS (yours)", r.Metrics.BenchmarkDps.Value.ToString("F0"));
         sb.Append("</tbody></table>");
 
         if (r.Findings.Count == 0)

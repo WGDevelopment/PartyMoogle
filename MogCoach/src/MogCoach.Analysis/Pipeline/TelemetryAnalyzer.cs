@@ -84,7 +84,7 @@ public sealed class TelemetryAnalyzer(ILlmClient llm, ILogger<TelemetryAnalyzer>
             GcdUptime = uptime,
             GcdDriftSeconds = selfCasts.Count > 1 ? drift : null,
             DeathCount = deaths,
-            BenchmarkDps = benchmark?.MedianDps,
+            BenchmarkDps = benchmark?.ReferenceRdps,
             // ActualDps intentionally null: derived DPS requires IINACT aggregated data, not log lines.
         };
     }
@@ -106,9 +106,10 @@ public sealed class TelemetryAnalyzer(ILlmClient llm, ILogger<TelemetryAnalyzer>
         sb.AppendLine($"Self deaths: {m.DeathCount}");
         if (benchmark is not null)
         {
-            sb.AppendLine($"Benchmark ({benchmark.Source}) median rDPS: {benchmark.MedianDps?.ToString("F0") ?? "n/a"}");
-            sb.AppendLine("Benchmark percentiles: " +
-                string.Join(", ", benchmark.DpsByPercentile.OrderBy(kv => kv.Key).Select(kv => $"p{kv.Key}={kv.Value:F0}")));
+            sb.AppendLine($"FFLogs ({benchmark.Job}) — best rDPS: {benchmark.BestRdps?.ToString("F0") ?? "n/a"} "
+                          + $"(p{benchmark.BestPercentile?.ToString("F0") ?? "?"}); "
+                          + $"median parse p{benchmark.MedianPercentile?.ToString("F0") ?? "?"} over {benchmark.Kills?.ToString() ?? "?"} kill(s)");
+            sb.AppendLine("Use these as the player's own historical bar to beat; they are percentiles vs the field, not this pull's DPS.");
         }
         sb.AppendLine();
 

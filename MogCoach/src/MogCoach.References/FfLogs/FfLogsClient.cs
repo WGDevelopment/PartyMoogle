@@ -11,11 +11,11 @@ namespace MogCoach.References.FfLogs;
 
 /// <summary>
 /// <see cref="IBenchmarkProvider"/> over the FFLogs v2 GraphQL API. Handles OAuth2 client-credentials
-/// token acquisition/caching and generic GraphQL execution. The benchmark query itself is scaffolded:
-/// FFLogs keys rankings by numeric encounter id (see <see cref="FfLogsOptions.EncounterIds"/>) and the
-/// exact percentile→DPS extraction depends on the ranking metric you choose — finalise the query in
-/// <see cref="BuildRankingsQuery"/> against the current schema (docs/SPEC.md, "FFLogs benchmarks").
-/// Returns null (rather than throwing) whenever a benchmark can't be resolved, so analysis proceeds.
+/// token acquisition/caching and generic GraphQL execution, and benchmarks a fight from the configured
+/// character's own parses via <c>characterData.character.zoneRankings</c> — returning best rDPS + its
+/// percentile, median-parse percentile, and kills (see <see cref="FfLogsOptions.EncounterIds"/> for how
+/// the encounter entry is matched). Returns null (rather than throwing) whenever a benchmark can't be
+/// resolved (unconfigured, character/logs not found, encounter unmapped), so analysis proceeds.
 /// </summary>
 public sealed class FfLogsClient : IBenchmarkProvider
 {
@@ -34,11 +34,13 @@ public sealed class FfLogsClient : IBenchmarkProvider
         _log = log;
     }
 
+    private static readonly string[] AllowedMetrics = ["rdps", "adps", "ndps", "dps"];
+
     public async Task<FightBenchmark?> GetBenchmarkAsync(string encounter, Job job, CancellationToken ct = default)
     {
         if (!_opts.IsConfigured)
         {
-            _log.LogInformation("FFLogs not configured; skipping benchmark for {Encounter}", encounter);
+            _log.LogInformation("FFLogs not configured (needs client + character + zone); skipping benchmark.");
             return null;
         }
         if (!_opts.EncounterIds.TryGetValue(encounter, out var encounterId))
@@ -47,12 +49,24 @@ public sealed class FfLogsClient : IBenchmarkProvider
             return null;
         }
 
+        var metric = AllowedMetrics.Contains(_opts.Metric?.ToLowerInvariant()) ? _opts.Metric!.ToLowerInvariant() : "rdps";
+        var spec = job != Job.Unknown ? job.ToString() : null;
+
         try
         {
-            var query = BuildRankingsQuery();
-            var vars = new JsonObject { ["encounterId"] = encounterId, ["specName"] = job.ToString() };
+            var query = BuildZoneRankingsQuery(metric, spec is not null);
+            var vars = new JsonObject
+            {
+                ["name"] = _opts.CharacterName,
+                ["server"] = _opts.Server,
+                ["region"] = _opts.Region,
+                ["zone"] = _opts.ZoneId,
+                ["difficulty"] = _opts.Difficulty,
+            };
+            if (spec is not null) vars["spec"] = spec;
+
             var data = await QueryAsync(query, vars, ct).ConfigureAwait(false);
-            return ParseBenchmark(data, encounter, job);
+            return ParseCharacterBenchmark(data, encounter, encounterId, job);
         }
         catch (Exception ex)
         {
@@ -122,50 +136,63 @@ public sealed class FfLogsClient : IBenchmarkProvider
     }
 
     /// <summary>
-    /// TODO: finalise against the FFLogs v2 schema. Rankings come back as a JSON blob under
-    /// worldData.encounter.characterRankings; choose your metric (rdps) and derive the percentile
-    /// brackets from the returned distribution.
+    /// Character zoneRankings query. Metric is an enum literal (inlined, allowlisted). zoneRankings
+    /// returns a JSON scalar whose <c>rankings</c> array has one entry per encounter in the zone.
     /// </summary>
-    private static string BuildRankingsQuery() => """
-        query($encounterId: Int!, $specName: String!) {
-          worldData {
-            encounter(id: $encounterId) {
-              name
-              characterRankings(specName: $specName, metric: rdps)
-            }
-          }
-        }
-        """;
-
-    private FightBenchmark? ParseBenchmark(JsonElement data, string encounter, Job job)
+    private static string BuildZoneRankingsQuery(string metric, bool hasSpec)
     {
-        // characterRankings is returned as an opaque JSON value; shape varies. Parse defensively.
-        if (!TryNavigate(data, out var rankings)) return null;
+        var specParam = hasSpec ? ", $spec: String" : "";
+        var specArg = hasSpec ? ", specName: $spec" : "";
+        return $$"""
+            query($name: String!, $server: String!, $region: String!, $zone: Int!, $difficulty: Int!{{specParam}}) {
+              characterData {
+                character(name: $name, serverSlug: $server, serverRegion: $region) {
+                  zoneRankings(zoneID: $zone, difficulty: $difficulty, metric: {{metric}}{{specArg}})
+                }
+              }
+            }
+            """;
+    }
 
-        var byPercentile = new Dictionary<int, double>();
-        // Placeholder: real extraction depends on the rankings payload. Left empty on purpose so a
-        // misparse yields "no benchmark" rather than fabricated numbers.
-        _ = rankings;
-
-        if (byPercentile.Count == 0)
+    private FightBenchmark? ParseCharacterBenchmark(JsonElement data, string encounter, int encounterId, Job job)
+    {
+        if (data.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() > 0)
         {
-            _log.LogInformation("FFLogs returned rankings but percentile extraction is not yet implemented.");
+            _log.LogWarning("FFLogs returned errors: {Errors}", errors.ToString());
             return null;
         }
 
-        return new FightBenchmark { Encounter = encounter, Job = job, DpsByPercentile = byPercentile };
+        if (!data.TryGetProperty("data", out var d) ||
+            !d.TryGetProperty("characterData", out var cd) ||
+            !cd.TryGetProperty("character", out var ch) || ch.ValueKind != JsonValueKind.Object ||
+            !ch.TryGetProperty("zoneRankings", out var zr) || zr.ValueKind != JsonValueKind.Object ||
+            !zr.TryGetProperty("rankings", out var rankings) || rankings.ValueKind != JsonValueKind.Array)
+        {
+            _log.LogInformation("FFLogs: no zoneRankings for character (not found, hidden, or no kills).");
+            return null;
+        }
+
+        foreach (var r in rankings.EnumerateArray())
+        {
+            if (!r.TryGetProperty("encounter", out var enc) ||
+                !enc.TryGetProperty("id", out var idEl) || idEl.GetInt32() != encounterId)
+                continue;
+
+            return new FightBenchmark
+            {
+                Encounter = encounter,
+                Job = job,
+                BestRdps = GetNullableDouble(r, "bestAmount"),
+                BestPercentile = GetNullableDouble(r, "rankPercent"),
+                MedianPercentile = GetNullableDouble(r, "medianPercent"),
+                Kills = r.TryGetProperty("totalKills", out var k) && k.ValueKind == JsonValueKind.Number ? k.GetInt32() : null,
+            };
+        }
+
+        _log.LogInformation("FFLogs: character has no ranking for encounter {Id}.", encounterId);
+        return null;
     }
 
-    private static bool TryNavigate(JsonElement root, out JsonElement rankings)
-    {
-        rankings = default;
-        if (root.TryGetProperty("data", out var d) &&
-            d.TryGetProperty("worldData", out var w) &&
-            w.TryGetProperty("encounter", out var enc) &&
-            enc.TryGetProperty("characterRankings", out rankings))
-        {
-            return true;
-        }
-        return false;
-    }
+    private static double? GetNullableDouble(JsonElement obj, string name) =>
+        obj.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetDouble() : null;
 }

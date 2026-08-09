@@ -165,11 +165,14 @@ The laptop fallback (~5 tok/s) is too slow for the vision pass; use it only for 
   `reference-data/rotations`. Lookup order: `{job}.{encounter}.json` → `{job}.json`. Populate
   these from a trusted source (e.g. The Balance) for the current patch. The bundled
   `warrior.json` is a **placeholder** schema demo, not authoritative rotation data.
-- **Benchmarks** (`FfLogsClient`): FFLogs v2 GraphQL with OAuth2 client-credentials (token
-  cached). **TODO**: FFLogs keys rankings by numeric encounter id (`FfLogs:EncounterIds` map)
-  and the percentile→rDPS extraction depends on the chosen metric — finalise
-  `BuildRankingsQuery`/`ParseBenchmark` against the current schema. Returns null (skips) when
-  unconfigured or unmapped, so analysis still runs.
+- **Benchmarks** (`FfLogsClient`): FFLogs v2 GraphQL, OAuth2 client-credentials (token cached).
+  The public API exposes a **named character's** parses, not a generic percentile histogram, so a
+  benchmark is *your own* history for the fight: **best rDPS + its percentile, median-parse
+  percentile, and kill count**, via `characterData.character.zoneRankings`. Requires the character
+  (name/server/region), the tier's `ZoneId`, and a `FfLogs:EncounterIds` map (encounter name →
+  FFLogs id) to pick the entry. Returns null (skips) when unconfigured, character/logs not found,
+  or the encounter isn't mapped — analysis still runs. `specName` is sent as the job name (VERIFY
+  the format matches FFLogs for edge-case jobs).
 
 ## 11. Report output
 
@@ -212,8 +215,9 @@ Screenpipe schema and probes the IINACT WebSocket for real events. See `docs/SET
    handshake for your IINACT build.
 3. **Director opcodes** (`IinactLogLineParser.DirectorCommand`) — the type-33 start/wipe/complete
    command codes vary by content; validate on a real capture.
-4. **FFLogs benchmark query** (§10) — finalise the GraphQL + percentile extraction and fill the
-   `EncounterIds` map.
+4. **FFLogs benchmark** (§10) — query implemented (character zoneRankings). To use it: set the
+   character (name/server/region), the tier `ZoneId`, and the `EncounterIds` map, then verify the
+   `specName` job-name format for any job that misses. Optional (skips cleanly if unset).
 5. **Aggregated DPS feed** — decide how to capture IINACT's per-actor rDPS (CombatData snapshot)
    alongside the log to populate `PullMetrics.ActualDps` and real percentile estimates.
 6. **Model swap** — deploy `Qwen2.5-VL-7B-Instruct-Q4` on VM108 and point `Llm:Model` at it.

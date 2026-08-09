@@ -46,7 +46,7 @@ public sealed class MarkdownReportRenderer : IReportRenderer
         sb.AppendLine($"| GCD drift (approx) | {FmtSeconds(r.Metrics.GcdDriftSeconds)} |");
         sb.AppendLine($"| Deaths | {r.Metrics.DeathCount} |");
         if (r.Metrics.BenchmarkDps is not null)
-            sb.AppendLine($"| Benchmark median rDPS | {r.Metrics.BenchmarkDps:F0} |");
+            sb.AppendLine($"| FFLogs best rDPS (yours) | {r.Metrics.BenchmarkDps:F0} |");
         if (r.Metrics.EstimatedPercentile is not null)
             sb.AppendLine($"| Estimated percentile | ~p{r.Metrics.EstimatedPercentile} |");
         sb.AppendLine();
