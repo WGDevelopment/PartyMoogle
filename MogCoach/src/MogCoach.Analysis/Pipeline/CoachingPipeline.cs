@@ -20,6 +20,7 @@ public sealed class CoachingPipeline(
     TelemetryAnalyzer telemetryAnalyzer,
     VisionAnalyzer visionAnalyzer,
     PositionalAnalyzer positionalAnalyzer,
+    ResourceAnalyzer resourceAnalyzer,
     FindingFuser fuser,
     ILogger<CoachingPipeline> log) : ICoachingPipeline
 {
@@ -60,7 +61,10 @@ public sealed class CoachingPipeline(
                 .Where(s => s.Timestamp >= pull.StartedAt && s.Timestamp <= pull.EndedAt)
                 .ToList();
             if (pullSnaps.Count > 0)
+            {
                 extraFindings.AddRange(await positionalAnalyzer.AnalyzeAsync(pull, pullSnaps, ct).ConfigureAwait(false));
+                extraFindings.AddRange(await resourceAnalyzer.AnalyzeAsync(pull, pullSnaps, rotation, ct).ConfigureAwait(false));
+            }
 
             if (request.EnableVision)
             {

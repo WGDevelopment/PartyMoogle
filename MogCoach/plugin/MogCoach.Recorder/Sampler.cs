@@ -183,6 +183,7 @@ public sealed class Sampler : IDisposable
         return new CastRecord
         {
             Id = Hex(chara.CastActionId),
+            Name = NameResolver.Action(chara.CastActionId),
             El = chara.CurrentCastTime,
             Tot = chara.TotalCastTime,
             Tgt = chara.CastTargetObjectId != 0 ? Hex(chara.CastTargetObjectId) : null,
@@ -198,6 +199,7 @@ public sealed class Sampler : IDisposable
             list.Add(new StatusRecord
             {
                 Id = Hex(s.StatusId),
+                Name = NameResolver.Status(s.StatusId),
                 Rem = s.RemainingTime,
                 Stk = s.Param,
                 Src = s.SourceId != 0 ? Hex(s.SourceId) : null,

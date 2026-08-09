@@ -16,6 +16,7 @@ public class Service
     [PluginService] public static ICondition Condition { get; private set; } = null!;
     [PluginService] public static IDutyState DutyState { get; private set; } = null!;
     [PluginService] public static IJobGauges JobGauges { get; private set; } = null!;
+    [PluginService] public static IDataManager DataManager { get; private set; } = null!;
     [PluginService] public static IChatGui ChatGui { get; private set; } = null!;
     [PluginService] public static IPluginLog Log { get; private set; } = null!;
 }

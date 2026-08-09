@@ -19,5 +19,8 @@
     "Keep Surging Tempest uptime as close to 100% as possible.",
     "Align Inner Release with party 2-minute burst windows.",
     "Avoid Infuriate overcap; don't hold gauge into downtime."
+  ],
+  "maintainedBuffs": [
+    { "statusId": "2F5", "name": "Surging Tempest", "targetUptime": 0.95 }
   ]
 }

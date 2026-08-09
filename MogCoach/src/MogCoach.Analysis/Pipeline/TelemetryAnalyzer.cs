@@ -129,7 +129,7 @@ public sealed class TelemetryAnalyzer(ILlmClient llm, ILogger<TelemetryAnalyzer>
         foreach (var e in selfCasts)
         {
             if (shown++ >= MaxTimelineLines) { sb.AppendLine($"... (+{selfCasts.Count - MaxTimelineLines} more)"); break; }
-            sb.AppendLine($"[{Offset(start, e.Timestamp)}] {e.AbilityName}");
+            sb.AppendLine($"[{Offset(start, e.Timestamp)}] {e.AbilityName ?? e.AbilityId ?? "?"}");
         }
         sb.AppendLine();
 

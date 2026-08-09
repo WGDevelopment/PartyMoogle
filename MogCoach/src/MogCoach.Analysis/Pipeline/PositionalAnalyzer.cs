@@ -19,7 +19,7 @@ public sealed class PositionalAnalyzer(IAoeShapeProvider shapes, ILogger<Positio
     private const float BackpedalDot = -0.5f;       // velocity·facing below this ⇒ moving backwards
     private const int MaxDangerFindings = 8;
 
-    private readonly record struct Resolution(string CastId, float Ox, float Oz, float H, DateTimeOffset At, float Sx, float Sz, bool HasSelf);
+    private readonly record struct Resolution(string CastId, string? CastName, float Ox, float Oz, float H, DateTimeOffset At, float Sx, float Sz, bool HasSelf);
 
     public async Task<IReadOnlyList<Finding>> AnalyzeAsync(
         Pull pull, IReadOnlyList<WorldSnapshot> snapshots, CancellationToken ct = default)
@@ -32,7 +32,7 @@ public sealed class PositionalAnalyzer(IAoeShapeProvider shapes, ILogger<Positio
         double movingTime = 0, backpedalTime = 0;
         ActorSnapshot? prevSelf = null;
         DateTimeOffset prevTs = default;
-        var casting = new Dictionary<string, (string castId, float ox, float oz, float h)>();
+        var casting = new Dictionary<string, (string castId, string? castName, float ox, float oz, float h)>();
 
         foreach (var snap in snapshots)
         {
@@ -65,14 +65,14 @@ public sealed class PositionalAnalyzer(IAoeShapeProvider shapes, ILogger<Positio
             {
                 if (enemy.Cast is null) continue;
                 castingNow.Add(enemy.Id);
-                casting[enemy.Id] = (enemy.Cast.AbilityId, enemy.X, enemy.Z, enemy.Heading);
+                casting[enemy.Id] = (enemy.Cast.AbilityId, enemy.Cast.AbilityName, enemy.X, enemy.Z, enemy.Heading);
             }
             foreach (var id in casting.Keys.Where(k => !castingNow.Contains(k)).ToList())
             {
                 var c = casting[id];
                 casting.Remove(id);
                 resolutions.Add(new Resolution(
-                    c.castId, c.ox, c.oz, c.h, snap.Timestamp,
+                    c.castId, c.castName, c.ox, c.oz, c.h, snap.Timestamp,
                     self?.X ?? 0, self?.Z ?? 0, self is not null));
             }
         }
@@ -106,11 +106,12 @@ public sealed class PositionalAnalyzer(IAoeShapeProvider shapes, ILogger<Positio
             if (Geometry.Contains(shape, r.Ox, r.Oz, r.H, r.Sx, r.Sz))
             {
                 emitted++;
+                var label = r.CastName ?? $"ability {r.CastId}";
                 findings.Add(new Finding
                 {
                     Severity = Severity.Major,
                     Category = FindingCategory.Positioning,
-                    Title = $"Stood in AoE (ability {r.CastId})",
+                    Title = $"Stood in AoE: {label}",
                     Detail = $"At {(r.At - pull.StartedAt).TotalSeconds:F0}s you were inside a {shape.Kind} AoE when it "
                              + "resolved (computed from your position vs the caster's position/facing).",
                     Recommendation = "Move out of the telegraph before the cast completes.",

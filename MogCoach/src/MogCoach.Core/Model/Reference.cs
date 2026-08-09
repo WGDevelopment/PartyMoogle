@@ -23,6 +23,19 @@ public sealed record RotationReference
 
     /// <summary>Free-form coaching notes / rules (e.g. "hold gauge for burst windows").</summary>
     public IReadOnlyList<string> Notes { get; init; } = [];
+
+    /// <summary>Buffs that should be kept up, with a target uptime — drives the resource pass.</summary>
+    public IReadOnlyList<MaintainedBuff> MaintainedBuffs { get; init; } = [];
+}
+
+/// <summary>A self-buff the job should keep up (e.g. Surging Tempest), with its uptime target.</summary>
+public sealed record MaintainedBuff
+{
+    /// <summary>Status id (hex) as it appears in the capture.</summary>
+    public required string StatusId { get; init; }
+    public string? Name { get; init; }
+    /// <summary>Target uptime fraction (0..1). Below this flags a finding.</summary>
+    public double TargetUptime { get; init; } = 0.95;
 }
 
 /// <summary>

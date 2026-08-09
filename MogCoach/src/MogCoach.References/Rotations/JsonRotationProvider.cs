@@ -83,6 +83,7 @@ public sealed class JsonRotationProvider : IReferenceProvider
         [JsonPropertyName("opener")] public List<string>? Opener { get; init; }
         [JsonPropertyName("priority")] public List<string>? Priority { get; init; }
         [JsonPropertyName("notes")] public List<string>? Notes { get; init; }
+        [JsonPropertyName("maintainedBuffs")] public List<MaintainedBuffDto>? MaintainedBuffs { get; init; }
 
         public RotationReference ToModel(Job job) => new()
         {
@@ -92,6 +93,21 @@ public sealed class JsonRotationProvider : IReferenceProvider
             Opener = Opener ?? [],
             Priority = Priority ?? [],
             Notes = Notes ?? [],
+            MaintainedBuffs = MaintainedBuffs?.Select(b => b.ToModel()).ToList() ?? [],
+        };
+    }
+
+    private sealed record MaintainedBuffDto
+    {
+        [JsonPropertyName("statusId")] public string? StatusId { get; init; }
+        [JsonPropertyName("name")] public string? Name { get; init; }
+        [JsonPropertyName("targetUptime")] public double? TargetUptime { get; init; }
+
+        public MaintainedBuff ToModel() => new()
+        {
+            StatusId = StatusId ?? "",
+            Name = Name,
+            TargetUptime = TargetUptime ?? 0.95,
         };
     }
 }

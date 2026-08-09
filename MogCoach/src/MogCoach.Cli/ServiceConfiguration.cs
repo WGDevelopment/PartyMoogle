@@ -55,6 +55,7 @@ public static class ServiceConfiguration
         services.AddTransient<TelemetryAnalyzer>();
         services.AddTransient<VisionAnalyzer>();
         services.AddTransient<PositionalAnalyzer>();
+        services.AddTransient<ResourceAnalyzer>();
         services.AddSingleton<FindingFuser>();
         services.AddTransient<ICoachingPipeline, CoachingPipeline>();
 
