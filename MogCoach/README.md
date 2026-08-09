@@ -9,10 +9,12 @@ It reuses the "record → transcribe → analyze → recommend" pattern of a Scr
 telegraphs, status timers, gauge) as the spine; **IINACT** supplies the action/damage event stream;
 **screen frames** are visual evidence. All inference runs **locally** on a Qwen2.5-VL model.
 
+> **Just want it running?** → **[`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md)** is the
+> copy-paste, zero-to-report quickstart.
+>
 > **Architecture:** read **[`docs/SAMPLER.md`](docs/SAMPLER.md)** — it explains the sampler spine and,
 > importantly, **how much of coaching is derivable from data alone** (a per-dimension table).
-> New to setup? **[`docs/SETUP.md`](docs/SETUP.md)** is the from-scratch guide; [`docs/SPEC.md`](docs/SPEC.md)
-> is the full design.
+> **[`docs/SETUP.md`](docs/SETUP.md)** is the detailed setup; [`docs/SPEC.md`](docs/SPEC.md) is the full design.
 
 ## How it works
 
