@@ -8,8 +8,8 @@ It reuses the "record → transcribe → analyze → recommend" pattern of a Scr
 uses **IINACT combat telemetry as the accurate spine** and **screen frames as visual evidence**,
 with all inference running **locally** on a Qwen2.5-VL model.
 
-> See [`docs/SPEC.md`](docs/SPEC.md) for the full design, and its §14 for the integration points
-> that must be verified against your live system before the first real run.
+> New to this? Start with **[`docs/SETUP.md`](docs/SETUP.md)** — an ordered, from-scratch build
+> guide. See [`docs/SPEC.md`](docs/SPEC.md) for the full design.
 
 ## How it works
 
@@ -38,6 +38,9 @@ the *visual* cause. That keeps vision cost bounded (see SPEC §8).
 ```bash
 cd MogCoach
 dotnet build
+
+# 0) Check what's wired up (run after each setup step; see docs/SETUP.md).
+dotnet run --project src/MogCoach.Cli -- doctor
 
 # 1) Record a session on the gaming PC (Ctrl+C to stop). Screenpipe runs independently.
 dotnet run --project src/MogCoach.Cli -- record --out captures/tonight.log

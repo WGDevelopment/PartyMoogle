@@ -36,6 +36,7 @@ try
     {
         "analyze" => await RunAnalyzeAsync(host, parsed, cts.Token),
         "record" => await RunRecordAsync(host, parsed, cts.Token),
+        "doctor" => await Doctor.RunAsync(host, parsed, cts.Token),
         _ => Unknown(parsed.Command),
     };
 }
@@ -125,6 +126,7 @@ static void PrintUsage()
         MogCoach — FFXIV post-session coaching (record → transcribe → analyze → recommend)
 
         Usage:
+          mogcoach doctor  [--seconds 8]           check your setup (run after each install step)
           mogcoach record  [--out captures/session.log]
           mogcoach analyze --capture <path> [options]
 

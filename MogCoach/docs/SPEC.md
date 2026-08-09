@@ -187,11 +187,15 @@ All in `appsettings.json`; secrets belong in `appsettings.Local.json` (git-ignor
 ## 13. CLI
 
 ```
+mogcoach doctor  [--seconds 8]     check setup: Screenpipe DB+schema, ffmpeg, IINACT WS, LLM (text+vision)
 mogcoach record  [--out captures/session.log]
 mogcoach analyze --capture <path> [--mode rotation|mechanics|awareness]
                  [--job Warrior] [--player "Name"] [--pull pull-03]
                  [--no-vision] [--format md|html] [--out report.md]
 ```
+
+`doctor` is the practical way to work through §14 items 1–2 on the live system — it introspects the
+Screenpipe schema and probes the IINACT WebSocket for real events. See `docs/SETUP.md`.
 
 ## 14. Open items to verify against the live system
 
