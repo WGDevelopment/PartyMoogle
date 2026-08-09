@@ -17,7 +17,7 @@ public static class CoachPrompts
           "findings": [
             {
               "severity": "Info|Minor|Major|Critical",
-              "category": "Rotation|Uptime|Resource|Positioning|Mechanic|Mitigation|Death|Awareness|Other",
+              "category": "Rotation|Uptime|Resource|Positioning|Mechanic|Mitigation|Death|Awareness|Input|Other",
               "title": "one line",
               "detail": "explanation citing the evidence given",
               "recommendation": "one concrete, singular fix",
@@ -59,5 +59,12 @@ public static class CoachPrompts
         the PICTURE for the visual cause: the player's position relative to AoE markers, telegraphs,
         stack/spread markers, arena boundaries, and party positions. Describe what is visible and, if
         an error is visible, give one concrete positioning fix. Do not speculate beyond the image.
+
+        Mouse pointer (weak signal — only if clearly visible): if you can see the cursor sitting on or
+        near the action hotbars, that HINTS the player may be clicking abilities with the mouse rather
+        than using keybinds. If and only if you actually see this, add ONE finding with category "Input"
+        and severity "Info", worded as a possibility (e.g. "cursor was over the hotbar — you may be
+        mouse-clicking skills; keybinds are faster"). Never infer input method when the cursor isn't
+        visible, and never rate it above Info — a single frame can't prove a click.
         """ + "\n" + JsonContract;
 }

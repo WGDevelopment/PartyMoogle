@@ -95,6 +95,7 @@ public enum FindingCategory
     Mitigation,
     Death,
     Awareness,
+    Input,
     Other,
 }
 

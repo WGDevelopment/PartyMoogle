@@ -95,6 +95,11 @@ DB directly and extracts frames with **ffmpeg**, so:
 *ffmpeg* OK. If the schema check fails, your Screenpipe version renamed columns — fix the SQL in
 `ScreenpipeSqliteFrameStore.cs` (doctor tells you which column).
 
+**Optional (mouse-pointer hint):** the screenshot review can note when the cursor is sitting on your
+hotbars (a weak hint you might be mouse-clicking skills). This only works if the screen capture
+includes the cursor — make sure cursor capture is enabled in Screenpipe. It's an unreliable,
+one-frame-a-second signal by nature; treat it as something to tune, not trust.
+
 ---
 
 ## 4. First run
