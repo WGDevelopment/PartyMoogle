@@ -51,7 +51,7 @@ public sealed class VisionAnalyzer(
             {
                 Messages =
                 [
-                    LlmMessage.System(CoachPrompts.VisionSystem),
+                    LlmMessage.System(CoachPrompts.VisionSystem(_opts.CursorHint)),
                     LlmMessage.User([.. parts]),
                 ],
                 JsonMode = true,

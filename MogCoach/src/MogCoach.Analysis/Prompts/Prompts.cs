@@ -52,19 +52,27 @@ public static class CoachPrompts
             """ + "\n" + JsonContract,
     };
 
-    /// <summary>System prompt for the per-keyframe vision pass.</summary>
-    public const string VisionSystem = """
+    /// <summary>Core vision-pass instructions (positioning). Composed with the cursor addendum + contract
+    /// by the analyzer, so the cursor hint can be toggled via config.</summary>
+    public const string VisionSystemBase = """
         You are an expert FFXIV mechanics coach reviewing a screenshot (or short frame sequence) from
         the exact moment described. Telemetry has already told you WHAT happened; your job is to read
         the PICTURE for the visual cause: the player's position relative to AoE markers, telegraphs,
         stack/spread markers, arena boundaries, and party positions. Describe what is visible and, if
         an error is visible, give one concrete positioning fix. Do not speculate beyond the image.
+        """;
 
+    /// <summary>Optional cursor-watching instruction (toggle: Analysis:CursorHint).</summary>
+    public const string VisionCursorAddendum = """
         Mouse pointer (weak signal — only if clearly visible): if you can see the cursor sitting on or
         near the action hotbars, that HINTS the player may be clicking abilities with the mouse rather
         than using keybinds. If and only if you actually see this, add ONE finding with category "Input"
         and severity "Info", worded as a possibility (e.g. "cursor was over the hotbar — you may be
         mouse-clicking skills; keybinds are faster"). Never infer input method when the cursor isn't
         visible, and never rate it above Info — a single frame can't prove a click.
-        """ + "\n" + JsonContract;
+        """;
+
+    /// <summary>Full vision prompt with the cursor hint (default). Analyzer builds the toggled variant.</summary>
+    public static string VisionSystem(bool cursorHint) =>
+        VisionSystemBase + (cursorHint ? "\n\n" + VisionCursorAddendum : "") + "\n" + JsonContract;
 }
