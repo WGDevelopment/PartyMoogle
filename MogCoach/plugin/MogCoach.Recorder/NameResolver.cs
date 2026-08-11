@@ -16,6 +16,19 @@ internal static class NameResolver
 {
     private static readonly Dictionary<uint, string?> Actions = new();
     private static readonly Dictionary<uint, string?> Statuses = new();
+    private static readonly Dictionary<uint, string?> Zones = new();
+
+    /// <summary>Resolves a TerritoryType id to its place name (the duty/area name).</summary>
+    public static string? Zone(uint territoryTypeId)
+    {
+        if (territoryTypeId == 0) return null;
+        if (Zones.TryGetValue(territoryTypeId, out var cached)) return cached;
+        var name = Resolve(() =>
+            Service.DataManager.GetExcelSheet<Lumina.Excel.Sheets.TerritoryType>()
+                ?.GetRowOrDefault(territoryTypeId)?.PlaceName.Value.Name.ExtractText());
+        Zones[territoryTypeId] = name;
+        return name;
+    }
 
     public static string? Action(uint id)
     {

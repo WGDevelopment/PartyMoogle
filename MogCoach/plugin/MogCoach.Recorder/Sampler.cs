@@ -31,6 +31,7 @@ public sealed class Sampler : IDisposable
     private long _lastTick;
     private bool _manual;
     private bool _dutyCompleted;
+    private ushort _lastTerritory;
     private readonly Dictionary<ulong, uint> _lastHp = new();
 
     public bool IsRecording => _writer.IsOpen;
@@ -91,6 +92,14 @@ public sealed class Sampler : IDisposable
 
         if (!IsRecording) return;
 
+        // Emit a zone marker if the area changed mid-capture (so reports name the duty).
+        var territory = Service.ClientState.TerritoryType;
+        if (territory != _lastTerritory)
+        {
+            _lastTerritory = territory;
+            EmitZone(territory);
+        }
+
         var interval = Math.Max(1, 1000 / Math.Clamp(_cfg.SampleHz, 1, 60));
         var now = Environment.TickCount64;
         if (now - _lastTick < interval) return;
@@ -117,6 +126,11 @@ public sealed class Sampler : IDisposable
             Job = JobName(lp?.ClassJob.RowId ?? 0),
             SampleHz = _cfg.SampleHz,
         });
+
+        // Zone marker before the pull so the segmenter/report knows the duty.
+        _lastTerritory = Service.ClientState.TerritoryType;
+        EmitZone(_lastTerritory);
+
         _writer.Write(new EventRecord { Ts = Now(), Type = "PullStart" });
         Service.Log.Information($"MogCoach recording -> {path}");
     }
@@ -126,6 +140,12 @@ public sealed class Sampler : IDisposable
         _writer.Write(new EventRecord { Ts = Now(), Type = "PullEnd", Cleared = cleared });
         Service.Log.Information($"MogCoach saved -> {CurrentPath}");
         _writer.Close();
+    }
+
+    private void EmitZone(ushort territory)
+    {
+        var name = NameResolver.Zone(territory);
+        _writer.Write(new EventRecord { Ts = Now(), Type = "Zone", Name = name ?? $"Territory {territory}" });
     }
 
     private void WriteSnapshot(IPlayerCharacter localPlayer)

@@ -84,11 +84,13 @@ static async Task<int> RunAnalyzeAsync(IHost host, CliArgs a, CancellationToken 
         return 0;
     }
 
-    var format = a.Get("format", "md").ToLowerInvariant();
-    var renderer = host.Services.GetServices<IReportRenderer>().FirstOrDefault(r => r.Extension == format)
-                   ?? host.Services.GetServices<IReportRenderer>().First();
+    // Format precedence: explicit --format, else inferred from the --out extension, else markdown.
+    var outArg = a.Get("out");
+    var format = (a.Get("format") ?? FormatFromPath(outArg) ?? "md").ToLowerInvariant();
+    var renderers = host.Services.GetServices<IReportRenderer>().ToList();
+    var renderer = renderers.FirstOrDefault(r => r.Extension == format) ?? renderers.First();
 
-    var outPath = a.Get("out") ?? Path.Combine("reports", $"session-{DateTime.Now:yyyyMMdd-HHmmss}.{renderer.Extension}");
+    var outPath = outArg ?? Path.Combine("reports", $"session-{DateTime.Now:yyyyMMdd-HHmmss}.{renderer.Extension}");
     Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outPath))!);
     await File.WriteAllTextAsync(outPath, renderer.RenderSession(reports), ct);
 
@@ -124,6 +126,13 @@ static int Unknown(string cmd)
 
 static TEnum ParseEnum<TEnum>(string? value, TEnum fallback) where TEnum : struct, Enum =>
     Enum.TryParse<TEnum>(value, ignoreCase: true, out var v) ? v : fallback;
+
+static string? FormatFromPath(string? path) => Path.GetExtension(path ?? "").ToLowerInvariant() switch
+{
+    ".html" or ".htm" => "html",
+    ".md" or ".markdown" => "md",
+    _ => null,
+};
 
 static void PrintUsage()
 {
