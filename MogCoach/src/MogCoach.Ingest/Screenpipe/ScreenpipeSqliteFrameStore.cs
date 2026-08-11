@@ -40,24 +40,57 @@ public sealed class ScreenpipeSqliteFrameStore : IFrameStore
 
     public async Task<Frame?> GetNearestAsync(DateTimeOffset timestamp, CancellationToken ct = default)
     {
-        var frame = await QueryNearestAsync(Adjust(timestamp), ct).ConfigureAwait(false);
-        if (frame is null) return null;
-        return frame with { ImageBytes = await MaterialiseAsync(frame, ct).ConfigureAwait(false) };
+        if (!Available()) return null;
+        try
+        {
+            var frame = await QueryNearestAsync(Adjust(timestamp), ct).ConfigureAwait(false);
+            if (frame is null) return null;
+            return frame with { ImageBytes = await MaterialiseAsync(frame, ct).ConfigureAwait(false) };
+        }
+        catch (SqliteException ex)
+        {
+            _log.LogWarning(ex, "Screenpipe DB query failed; skipping frames for this moment.");
+            return null;
+        }
     }
 
     public async Task<IReadOnlyList<Frame>> GetWindowAsync(
         DateTimeOffset timestamp, TimeSpan before, TimeSpan after, CancellationToken ct = default)
     {
-        var center = Adjust(timestamp);
-        var metas = await QueryRangeAsync(center - before, center + after, ct).ConfigureAwait(false);
-        var result = new List<Frame>(metas.Count);
-        foreach (var m in metas)
+        if (!Available()) return [];
+        try
         {
-            ct.ThrowIfCancellationRequested();
-            result.Add(m with { ImageBytes = await MaterialiseAsync(m, ct).ConfigureAwait(false) });
+            var center = Adjust(timestamp);
+            var metas = await QueryRangeAsync(center - before, center + after, ct).ConfigureAwait(false);
+            var result = new List<Frame>(metas.Count);
+            foreach (var m in metas)
+            {
+                ct.ThrowIfCancellationRequested();
+                result.Add(m with { ImageBytes = await MaterialiseAsync(m, ct).ConfigureAwait(false) });
+            }
+            return result;
         }
-        return result;
+        catch (SqliteException ex)
+        {
+            _log.LogWarning(ex, "Screenpipe DB query failed; skipping frames for this window.");
+            return [];
+        }
     }
+
+    /// <summary>Vision is optional: if the Screenpipe DB isn't present, the frame store simply yields
+    /// nothing and the vision pass no-ops (rather than crashing the whole run).</summary>
+    private bool Available()
+    {
+        if (File.Exists(_opts.DbPath)) return true;
+        if (!_warnedMissing)
+        {
+            _warnedMissing = true;
+            _log.LogInformation("Screenpipe DB not found at {Path}; vision/screenshot analysis is skipped.", _opts.DbPath);
+        }
+        return false;
+    }
+
+    private bool _warnedMissing;
 
     private DateTimeOffset Adjust(DateTimeOffset ts) => ts.AddSeconds(_opts.ClockOffsetSeconds);
 

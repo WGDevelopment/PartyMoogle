@@ -167,6 +167,23 @@ Surging Tempest"** finding — both computed with no AI. (`--no-vision` skips on
 
 ---
 
+## Optional: the vision/screenshot layer (Screenpipe + VL model)
+
+**You do not need this to get real coaching.** The in-game recorder already computes positioning,
+mechanics, deaths, rotation, and gauge/buffs from game data. Screenpipe only adds a *screenshot
+confirmation* layer (and the weak mouse-cursor hint) — the least important part. If the Screenpipe DB
+isn't present, MogCoach just skips it and everything else still runs.
+
+If you later want that layer:
+
+1. **Install Screenpipe** on this PC from <https://screenpi.pe> and start it (it records the screen to
+   `~/.screenpipe/db.sqlite`). Make sure cursor capture is on if you want the mouse hint.
+2. **Swap VM108 to the vision model** — the `--mmproj` step in [`SETUP.md`](SETUP.md) §1. Without it,
+   the endpoint returns "image input is not supported" (a text-only model can't see images).
+
+Until you do both, just run `analyze` normally — the vision pass no-ops and you still get the full
+data-driven report.
+
 ## If something breaks
 
 - `doctor` is your first stop — it names what's missing.
