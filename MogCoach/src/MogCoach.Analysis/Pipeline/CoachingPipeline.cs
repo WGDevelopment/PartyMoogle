@@ -26,8 +26,13 @@ public sealed class CoachingPipeline(
 {
     public async Task<IReadOnlyList<CoachingReport>> RunAsync(CoachingRequest request, CancellationToken ct = default)
     {
+        // Prefer the requested job; otherwise read it from the capture header.
+        var job = request.Job != Job.Unknown
+            ? request.Job
+            : await snapshotProvider.InferJobAsync(request.CapturePath, ct).ConfigureAwait(false);
+
         var source = sourceFactory.Create(request.CapturePath, request.PlayerName);
-        var pulls = await segmenter.SegmentAsync(source.ReadAsync(ct), request.Job, ct).ConfigureAwait(false);
+        var pulls = await segmenter.SegmentAsync(source.ReadAsync(ct), job, ct).ConfigureAwait(false);
 
         if (request.OnlyPullId is { } only)
             pulls = pulls.Where(p => p.Id == only).ToList();
@@ -45,14 +50,13 @@ public sealed class CoachingPipeline(
             log.LogInformation("Analyzing {Pull} ({Encounter}, {Dur:F0}s)",
                 pull.Id, pull.EncounterName ?? pull.ZoneName, pull.Duration.TotalSeconds);
 
-            var job = request.Job != Job.Unknown ? request.Job : pull.Job;
             var encounter = pull.EncounterName ?? pull.ZoneName;
 
             var rotation = await referenceProvider.GetRotationAsync(job, encounter, ct).ConfigureAwait(false);
             var benchmark = await benchmarkProvider.GetBenchmarkAsync(encounter, job, ct).ConfigureAwait(false);
 
             var telemetry = await telemetryAnalyzer
-                .AnalyzeAsync(pull, request.Mode, rotation, benchmark, ct).ConfigureAwait(false);
+                .AnalyzeAsync(pull, request.Mode, rotation, benchmark, request.EnableLlm, ct).ConfigureAwait(false);
 
             var extraFindings = new List<Finding>();
 
@@ -66,7 +70,7 @@ public sealed class CoachingPipeline(
                 extraFindings.AddRange(await resourceAnalyzer.AnalyzeAsync(pull, pullSnaps, rotation, ct).ConfigureAwait(false));
             }
 
-            if (request.EnableVision)
+            if (request.EnableVision && request.EnableLlm)
             {
                 var keyframes = await keyframeSelector
                     .SelectAsync(pull, frameStore, request.Mode, ct).ConfigureAwait(false);

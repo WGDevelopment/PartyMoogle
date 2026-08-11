@@ -72,6 +72,7 @@ static async Task<int> RunAnalyzeAsync(IHost host, CliArgs a, CancellationToken 
         PlayerName = a.Get("player"),
         OnlyPullId = a.Get("pull"),
         EnableVision = !a.Flag("no-vision"),
+        EnableLlm = !a.Flag("no-llm"),
     };
 
     var pipeline = host.Services.GetRequiredService<ICoachingPipeline>();
@@ -142,7 +143,9 @@ static void PrintUsage()
           --job <job>          e.g. Warrior, WhiteMage, BlackMage  (default: infer/Unknown)
           --player "<name>"    local player name for self-attribution
           --pull <id>          analyze only one pull (e.g. pull-03)
-          --no-vision          skip the vision pass (telemetry only)
+          --no-vision          skip the screenshot (vision) pass
+          --no-llm             skip ALL AI passes — deterministic only (metrics, positioning,
+                               gauge/buffs). No AI endpoint needed. Great for the sample.
           --format <fmt>       md | html                          (default: md)
           --out <path>         output report path
 

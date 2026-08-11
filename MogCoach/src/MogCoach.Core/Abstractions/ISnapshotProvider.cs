@@ -10,4 +10,7 @@ namespace MogCoach.Core.Abstractions;
 public interface ISnapshotProvider
 {
     Task<IReadOnlyList<WorldSnapshot>> ReadSnapshotsAsync(string capturePath, CancellationToken ct = default);
+
+    /// <summary>Reads the player's job from the capture header when available; Unknown otherwise.</summary>
+    Task<Job> InferJobAsync(string capturePath, CancellationToken ct = default);
 }

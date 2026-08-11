@@ -30,6 +30,25 @@ public sealed class SamplerSnapshotProvider : ISnapshotProvider
         return snapshots;
     }
 
+    public async Task<Job> InferJobAsync(string capturePath, CancellationToken ct = default)
+    {
+        if (!IsSamplerCapture(capturePath) || !File.Exists(capturePath)) return Job.Unknown;
+
+        using var reader = new StreamReader(capturePath);
+        // The header is the first line.
+        if (await reader.ReadLineAsync(ct).ConfigureAwait(false) is not { } line) return Job.Unknown;
+        try
+        {
+            using var doc = JsonDocument.Parse(line);
+            if (SamplerCaptureParser.Kind(doc.RootElement) == "hdr" &&
+                doc.RootElement.TryGetProperty("job", out var j) &&
+                Enum.TryParse<Job>(j.GetString(), ignoreCase: true, out var job))
+                return job;
+        }
+        catch (JsonException) { /* fall through */ }
+        return Job.Unknown;
+    }
+
     public static bool IsSamplerCapture(string path) =>
         path.EndsWith(".mogcap", StringComparison.OrdinalIgnoreCase);
 }

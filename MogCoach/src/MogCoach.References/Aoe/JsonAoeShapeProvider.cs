@@ -49,19 +49,46 @@ public sealed class JsonAoeShapeProvider : IAoeShapeProvider
             return _cache = new Dictionary<string, AoeShape>(StringComparer.OrdinalIgnoreCase);
         }
 
+        var map = new Dictionary<string, AoeShape>(StringComparer.OrdinalIgnoreCase);
         try
         {
-            await using var fs = File.OpenRead(path);
-            var dto = await JsonSerializer.DeserializeAsync<Dictionary<string, ShapeDto>>(fs, JsonOpts, ct)
-                .ConfigureAwait(false) ?? new();
-            _cache = dto.ToDictionary(kv => kv.Key, kv => kv.Value.ToModel(), StringComparer.OrdinalIgnoreCase);
-            _log.LogInformation("Loaded {N} AoE shape definitions.", _cache.Count);
-            return _cache;
+            var text = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
+            using var doc = JsonDocument.Parse(text, new JsonDocumentOptions
+            {
+                CommentHandling = JsonCommentHandling.Skip,
+                AllowTrailingCommas = true,
+            });
+
+            if (doc.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                _log.LogWarning("AoE shapes file {Path} is not a JSON object; ignoring.", path);
+                return _cache = map;
+            }
+
+            // Iterate entries so comment/schema keys (e.g. "//") and any single malformed entry are
+            // skipped without failing the whole file.
+            foreach (var prop in doc.RootElement.EnumerateObject())
+            {
+                if (prop.Name.StartsWith("//", StringComparison.Ordinal)) continue;
+                if (prop.Value.ValueKind != JsonValueKind.Object) continue;
+                try
+                {
+                    var dto = prop.Value.Deserialize<ShapeDto>(JsonOpts);
+                    if (dto is not null) map[prop.Name] = dto.ToModel();
+                }
+                catch (JsonException ex)
+                {
+                    _log.LogWarning(ex, "Skipping malformed AoE entry '{Key}' in {Path}", prop.Name, path);
+                }
+            }
+
+            _log.LogInformation("Loaded {N} AoE shape definitions.", map.Count);
+            return _cache = map;
         }
         catch (JsonException ex)
         {
             _log.LogWarning(ex, "Malformed AoE shapes file {Path}", path);
-            return _cache = new Dictionary<string, AoeShape>(StringComparer.OrdinalIgnoreCase);
+            return _cache = map;
         }
     }
 

@@ -150,13 +150,17 @@ start reports\latest.html
 
 ## Kick the tires without any of the above
 
-Want to see a report render before you've set anything up? Run the bundled sample (no game, model,
-or recording needed):
+Want to see a report render before you've set anything up? Run the bundled sample with `--no-llm`
+(deterministic only — no game, model, or recording needed):
 
 ```powershell
-dotnet run --project src/MogCoach.Cli -- analyze --capture samples\sample-session.mogcap --no-vision --out reports\sample.html
+dotnet run --project src/MogCoach.Cli -- analyze --capture samples\sample-session.mogcap --no-llm --out reports\sample.html
 start reports\sample.html
 ```
+
+You should get a **"Stood in AoE: Ground Circle"** finding (the geometry check) and a **"Low uptime:
+Surging Tempest"** finding — both computed with no AI. (`--no-vision` skips only the screenshot pass;
+`--no-llm` skips all AI, which is what makes this run need nothing.)
 
 ---
 

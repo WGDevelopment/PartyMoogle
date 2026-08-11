@@ -57,9 +57,9 @@ dotnet run --project src/MogCoach.Cli -- analyze \
   --capture captures/tonight.mogcap --job Warrior --mode mechanics --format html \
   --out reports/tonight.html
 
-# Smoke tests against the bundled samples (no LLM/frames needed with --no-vision):
-dotnet run --project src/MogCoach.Cli -- analyze --capture samples/sample-session.mogcap --no-vision
-dotnet run --project src/MogCoach.Cli -- analyze --capture samples/sample-capture.log --no-vision
+# Smoke tests against the bundled samples (--no-llm = deterministic only, no AI endpoint needed):
+dotnet run --project src/MogCoach.Cli -- analyze --capture samples/sample-session.mogcap --no-llm
+dotnet run --project src/MogCoach.Cli -- analyze --capture samples/sample-capture.log --no-llm
 ```
 
 The Dalamud sampler plugin lives in [`plugin/MogCoach.Recorder`](plugin/MogCoach.Recorder) and builds

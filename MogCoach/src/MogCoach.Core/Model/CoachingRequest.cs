@@ -23,4 +23,11 @@ public sealed record CoachingRequest
 
     /// <summary>Enable the vision pass. When false, only telemetry findings are produced.</summary>
     public bool EnableVision { get; init; } = true;
+
+    /// <summary>
+    /// Use the LLM at all. When false, the model-backed passes (telemetry text findings + vision) are
+    /// skipped and only the deterministic passes run (metrics, positional, resource) — no AI endpoint
+    /// needed. Useful for offline checks and the bundled sample.
+    /// </summary>
+    public bool EnableLlm { get; init; } = true;
 }

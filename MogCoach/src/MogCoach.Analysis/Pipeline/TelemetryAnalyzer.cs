@@ -29,9 +29,15 @@ public sealed class TelemetryAnalyzer(ILlmClient llm, ILogger<TelemetryAnalyzer>
         CoachingMode mode,
         RotationReference? rotation,
         FightBenchmark? benchmark,
+        bool useLlm = true,
         CancellationToken ct = default)
     {
         var metrics = ComputeMetrics(pull, benchmark);
+
+        // Metrics are deterministic; the LLM only produces the narrative findings + summary.
+        if (!useLlm)
+            return new TelemetryAnalysisResult(metrics, [], string.Empty);
+
         var digest = BuildDigest(pull, metrics, rotation, benchmark);
 
         var request = new LlmChatRequest
