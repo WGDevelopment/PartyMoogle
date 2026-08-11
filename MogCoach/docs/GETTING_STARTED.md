@@ -95,18 +95,21 @@ docker run -d --name qwen-vl --restart unless-stopped --runtime=nvidia --gpus al
 
 ## Part C — Configure (gaming PC)
 
-Open `src\MogCoach.Cli\appsettings.json` in Notepad and set:
-
-- `Llm.BaseUrl` → `http://shared-services:11434` (your model box)
-- `Llm.Model` → the VL model name you loaded, e.g. `qwen2.5-vl-7b-instruct`
-- `Screenpipe.DbPath` → `C:\Users\<YOU>\.screenpipe\db.sqlite` (your Windows username)
-
-Optional (for the "your FFLogs numbers" part): fill `FfLogs.ClientId/ClientSecret`,
-`CharacterName/Server/Region`, `ZoneId`, and `EncounterIds`.
+The defaults in `appsettings.json` already point at `http://shared-services:11434` and
+`~/.screenpipe/db.sqlite` (which expands to your Windows profile), so usually the **only** thing you
+need to add is the API key — and that belongs in a **gitignored** override so it never gets
+committed. Copy the template and paste your key:
 
 ```powershell
-notepad src\MogCoach.Cli\appsettings.json
+copy src\MogCoach.Cli\appsettings.Local.example.json src\MogCoach.Cli\appsettings.Local.json
+notepad src\MogCoach.Cli\appsettings.Local.json
 ```
+
+Set `Llm.ApiKey` to your `GPU_LLM_KEY`. If your model name differs, set `Llm.Model` too. Anything in
+this file overrides `appsettings.json`.
+
+Optional (for the "your FFLogs numbers" part): add an `FfLogs` block here with `ClientId/ClientSecret`,
+`CharacterName/Server/Region`, `ZoneId`, and `EncounterIds`.
 
 ---
 

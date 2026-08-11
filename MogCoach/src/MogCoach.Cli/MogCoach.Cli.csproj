@@ -21,6 +21,8 @@
 
   <ItemGroup>
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Gitignored local override for secrets (API key, etc.); copied to output only if present. -->
+    <None Update="appsettings.Local.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('appsettings.Local.json')" />
   </ItemGroup>
 
 </Project>
