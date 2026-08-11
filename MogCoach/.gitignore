@@ -21,6 +21,11 @@ captures/
 reports/
 *.mogcap
 
+# ...but DO keep the bundled sample captures — they're smoke-test fixtures, not real
+# captures. These negations override the *.mogcap rule above and the repo-root *.log rule.
+!samples/sample-session.mogcap
+!samples/sample-capture.log
+
 # OS
 .DS_Store
 Thumbs.db
